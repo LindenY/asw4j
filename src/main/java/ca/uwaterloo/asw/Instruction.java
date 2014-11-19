@@ -8,8 +8,12 @@ public abstract  class Instruction implements Runnable {
 	public abstract void preExecution();
 	public abstract void execute();
 	public abstract void postExecution();
+	
+	public abstract DataNode getResult();
 
 	public final void run() {
+		preExecution();
 		execute();
+		postExecution();
 	}
 }
