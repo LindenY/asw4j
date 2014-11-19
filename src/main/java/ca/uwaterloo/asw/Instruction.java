@@ -1,13 +1,9 @@
 package ca.uwaterloo.asw;
 
-import java.util.Map;
-
 public abstract  class Instruction implements Runnable {
 	
-	private ToolResolver toolResolver;
-	
 	public abstract void setRawDataNodes(DataNode[] rawDataNodes);
-	public abstract void setToolbox();
+	public abstract void setToolbox(ToolResolver toolResolver);
 	
 	public abstract void preExecution();
 	public abstract void execute();
