@@ -3,6 +3,7 @@ package ca.uwaterloo.asw;
 public interface InstructionResolver {
 
 	public void registerInstruction(String[] requiredNames, Class<Instruction> instructionClass);
+	public int numberOfRegisteredInstruction();
 	public Instruction resolveInstruction();
 	public Instruction getInstruction(String[] dataNodeNames);
 	
