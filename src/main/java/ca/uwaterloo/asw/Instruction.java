@@ -1,5 +1,7 @@
 package ca.uwaterloo.asw;
 
+import java.util.Date;
+
 public abstract  class Instruction implements Runnable {
 	
 	public abstract void setRawDataNodes(DataNode[] rawDataNodes);
@@ -13,7 +15,14 @@ public abstract  class Instruction implements Runnable {
 
 	public final void run() {
 		preExecution();
+		Date d = new Date();
 		execute();
+		executionDuration = new Date().getTime() - d.getTime();
 		postExecution();
+	}
+	
+	private long executionDuration;
+	public long getExecutionDuration() {
+		return executionDuration;
 	}
 }
