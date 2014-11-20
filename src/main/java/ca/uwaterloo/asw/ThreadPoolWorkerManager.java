@@ -30,7 +30,7 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 
 		BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(30);
 		threadPool = new ThreadPool(coreNumWorkers, coreNumWorkers, 10,
-				TimeUnit.SECONDS, workQueue);
+				TimeUnit.SECONDS, workQueue, this);
 
 		LOG.debug(String
 				.format("ThreadPoolWorkerManager instantialized with [coreNumWorkers:%d], [maxNumWorkers:%d]",
@@ -41,36 +41,37 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 	public T start() {
 		LOG.debug(String
 				.format("Invoked Start() with [DataNodeStore.size:%d], [InstructionResolver.size:%d]",
-						dataNodeStore
-								.getAllDataNodesWithStage(STAGE.TRANSITIONAL).size(),
+						dataNodeStore.getAllDataNodesWithStage(
+								STAGE.TRANSITIONAL).size(),
 						instructionResolver.numberOfRegisteredInstruction()));
 
-		synchronized (this) {
-			while (dataNodeStore.getAllDataNodesWithStage(STAGE.TRANSITIONAL)
-					.size() > 0 || threadPool.getActiveCount() > 0) {
+		Date startTime = new Date();
 
-				Instruction instruction = instructionResolver
-						.resolveInstruction();
-				while (instruction != null) {
-					threadPool.execute(instruction);
-					instruction = instructionResolver.resolveInstruction();
-				}
-
-				/*
-				try {
-					LOG.debug("Start waiting");
-					this.wait();
-				} catch (InterruptedException e) {
-					LOG.debug("Wake up from " + e.getLocalizedMessage());
-				}
-				*/
+		Instruction instruction = instructionResolver.resolveInstruction();
+		synchronized (dataNodeStore) {
+			while (instruction != null) {
+				threadPool.execute(instruction);
+				instruction = instructionResolver.resolveInstruction();
 			}
 		}
 
-		threadPool.shutdown();
+		try {
+			LOG.debug("Start waiting");
+			synchronized (this) {
+				this.wait();
+			}
+		} catch (InterruptedException e) {
+			LOG.debug("Wake up from " + e.getLocalizedMessage());
+		}
 
+		threadPool.shutdown();
 		Collection<DataNode> dataNodes = dataNodeStore
 				.getAllDataNodesWithStage(STAGE.FINAL);
+		
+		LOG.debug(String.format(
+				"Finished task with [Duration:%d] and [completedTaskCount:%d]",
+				new Date().getTime() - startTime.getTime(),
+				threadPool.getCompletedTaskCount()));
 		return combiner.combineDataNodes(dataNodes);
 	}
 
@@ -88,22 +89,22 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 
 	private class ThreadPool extends ThreadPoolExecutor {
 
+		private ThreadPoolWorkerManager<T> workerManager;
 		private Map<Runnable, Date> timeMap = new HashMap<Runnable, Date>();
 
 		public ThreadPool(int corePoolSize, int maximumPoolSize,
 				long keepAliveTime, TimeUnit unit,
-				BlockingQueue<Runnable> workQueue) {
+				BlockingQueue<Runnable> workQueue,
+				ThreadPoolWorkerManager<T> workerManager) {
 			super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
+			this.workerManager = workerManager;
 		}
 
 		@Override
 		protected void beforeExecute(Thread t, Runnable r) {
-			LOG.debug(String.format(
-					"Before Execute [Instruction:%s] on [Thread:%s]", r
-							.getClass().getName(), t.getName()));
-
+			LOG.debug(String.format("Before Execute [%s] on [%s]", r.getClass()
+					.getName(), t.getName()));
 			timeMap.put(r, new Date());
-
 			instructionResolver.beforInstructionExecution((Instruction) r);
 			super.beforeExecute(t, r);
 		}
@@ -111,13 +112,26 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 		@Override
 		protected void afterExecute(Runnable r, Throwable t) {
 			long duration = (new Date()).getTime() - timeMap.get(r).getTime();
-			LOG.debug(String.format(
-					"After execute [Instruction:%s] with duration %d", r
-							.getClass().getName(), duration));
+			LOG.debug(String.format("After execute [%s] with duration %d", r
+					.getClass().getName(), duration));
 
-			Instruction instruction = (Instruction) r;
-			dataNodeStore.add(instruction.getResult());
-			instructionResolver.afterInstructionExecution(instruction);
+			Instruction finishedInstruction = (Instruction) r;
+			Instruction newInstruction = null;
+			synchronized (dataNodeStore) {
+				dataNodeStore.add(finishedInstruction.getResult());
+				newInstruction = instructionResolver.resolveInstruction();
+			}
+			instructionResolver.afterInstructionExecution(finishedInstruction);
+
+			if (newInstruction == null) {
+				if (getActiveCount() <= 1 && getQueue().size() <= 0) {
+					synchronized (workerManager) {
+						workerManager.notify();
+					}
+				}
+			} else {
+				execute(newInstruction);
+			}
 			super.afterExecute(r, t);
 		}
 	}
