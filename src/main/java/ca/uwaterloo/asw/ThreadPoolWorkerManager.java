@@ -55,24 +55,28 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 			}
 		}
 
-		try {
-			LOG.debug("Start waiting");
-			synchronized (this) {
-				this.wait();
+		T executedResult = null;
+		if (threadPool.getActiveCount() > 0) {
+			try {
+				LOG.debug("Start waiting");
+				synchronized (this) {
+					this.wait();
+				}
+			} catch (InterruptedException e) {
+				LOG.debug("Wake up from " + e.getLocalizedMessage());
 			}
-		} catch (InterruptedException e) {
-			LOG.debug("Wake up from " + e.getLocalizedMessage());
+			
+			threadPool.shutdown();
+			Collection<DataNode> dataNodes = dataNodeStore
+					.getAllDataNodesWithStage(STAGE.FINAL);
+			executedResult = combiner.combineDataNodes(dataNodes);
 		}
 
-		threadPool.shutdown();
-		Collection<DataNode> dataNodes = dataNodeStore
-				.getAllDataNodesWithStage(STAGE.FINAL);
-		
 		LOG.debug(String.format(
 				"Finished task with [Duration:%d] and [completedTaskCount:%d]",
 				new Date().getTime() - startTime.getTime(),
 				threadPool.getCompletedTaskCount()));
-		return combiner.combineDataNodes(dataNodes);
+		return executedResult;
 	}
 
 	@Override
