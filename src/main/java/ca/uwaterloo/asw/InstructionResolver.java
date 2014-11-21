@@ -2,7 +2,7 @@ package ca.uwaterloo.asw;
 
 public interface InstructionResolver {
 
-	public <T extends Instruction> void registerInstruction(String[] requiredNames,  Class<T> instructionClass);
+	public void registerInstruction(String[] requiredNames,  Class instructionClass);
 	public int numberOfRegisteredInstruction();
 	public Instruction resolveInstruction();
 	public Instruction getInstruction(String[] dataNodeNames);
