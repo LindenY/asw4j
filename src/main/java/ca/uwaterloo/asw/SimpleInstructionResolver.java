@@ -1,238 +1,132 @@
 package ca.uwaterloo.asw;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.uwaterloo.asw.DataNode.STAGE;
 
-public class LinkedListStore implements DataNodeStore {
+public class SimpleInstructionResolver extends AbstractInstructionResolver {
 
-	/*
-	 * private ThreadLocal<Iterator<DataNode>> threadLocalIterator = new
-	 * ThreadLocal<Iterator<DataNode>>() {
-	 * 
-	 * @Override protected Iterator<DataNode> initialValue() { return new
-	 * LocalIterator(linkedList); } };
-	 */
+	private final static Logger LOG = LoggerFactory
+			.getLogger(SimpleInstructionResolver.class);
 
-	private static final Logger LOG = LoggerFactory
-			.getLogger(LinkedListStore.class);
+	private Map<Class, String[]> classDependenciesMap = new HashMap<Class, String[]>();
 
-	private LinkedList linkedList = new LinkedList();
-	private List<DataNode> finalDataNodes = new ArrayList<DataNode>();
-
-	public void add(DataNode dataNode) {
-		if (dataNode.getStage() == STAGE.TRANSITIONAL) {
-			linkedList.add(dataNode);
-		} else if (dataNode.getStage() == STAGE.FINAL) {
-			finalDataNodes.add(dataNode);
-		}
+	public SimpleInstructionResolver(ToolResolver toolResolver,
+			DataNodeStore dataNodeStore) {
+		super(toolResolver, dataNodeStore);
 	}
 
-	public void addAll(Collection<DataNode> dataNodes) {
-		Iterator<DataNode> itr = dataNodes.iterator();
-		while (itr.hasNext()) {
-			add(itr.next());
-		}
+	public void registerInstruction(String[] requiredNames,
+			Class instructionClass) {
+		classDependenciesMap.put(instructionClass, requiredNames);
 	}
 
-	public DataNode get(String name, STAGE stage) {
-		Iterator<DataNode> itr = null;
-		itr = iterator(stage);
-		while (itr.hasNext()) {
-			DataNode next = itr.next();
-			if (next.getName().equals(name)) {
-				return next;
+	public int numberOfRegisteredInstruction() {
+		return classDependenciesMap.keySet().size();
+	}
+
+	public Instruction resolveInstruction() {
+		for (Class ic : classDependenciesMap.keySet()) {
+
+			String[] requiredName = classDependenciesMap.get(ic);
+			List<DataNode> requiredList = new ArrayList<DataNode>();
+			DataNode matched = null;
+
+			for (String name : requiredName) {
+				Iterator<DataNode> iterator = dataNodeStore
+						.iterator(STAGE.TRANSITIONAL);
+
+				while (iterator.hasNext()) {
+					DataNode next = iterator.next();
+					if (next.getName().equals(name)) {
+						
+						LOG.warn("found matched : " + name);
+						matched = next;
+						break;
+					}
+				}
+
+				if (matched == null) {
+					break;
+				} else {
+					requiredList.add(matched);
+					matched = null;
+				}
+			}
+
+			if (requiredList.size() == requiredName.length) {
+				return prepareInstructionClass(ic, requiredList);
 			}
 		}
 		return null;
 	}
 
-	public DataNode getAndRemove(String name, STAGE stage) {
-		DataNode dn = get(name, stage);
+	public Instruction getInstruction(String[] dataNodeNames) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-		if (dn == null) {
+	public void beforInstructionExecution(Instruction instruction) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void afterInstructionExecution(Instruction instruction) {
+		// TODO Auto-generated method stub
+	}
+
+	private Instruction prepareInstructionClass(Class instructionClass,
+			List<DataNode> dataNodes) {
+
+		Instruction instruction = instantizeInstruction(instructionClass);
+
+		if (instruction == null) {
 			return null;
 		}
-
-		if (dn.getStage() == STAGE.TRANSITIONAL) {
-			linkedList.remove(dn);
-		} else if (dn.getStage() == STAGE.FINAL) {
-			synchronized (finalDataNodes) {
-				finalDataNodes.remove(dn);
-			}
-		}
-		return dn;
-	}
-
-	public List<DataNode> getAllDataNodesWithStage(STAGE stage) {
-		if (stage == STAGE.TRANSITIONAL) {
-			List<DataNode> tdn = new ArrayList<DataNode>();
-
-			Iterator<DataNode> itr = iterator(stage);
-			
-			int count = 0;
-			while (itr.hasNext()) {
-				tdn.add(itr.next());
-			}
-			return tdn;
-		} else if (stage == STAGE.FINAL) {
-			return finalDataNodes;
-		}
-
-		return null;
-	}
-
-	public Iterator<DataNode> iterator(STAGE stage) {
-		if (stage == STAGE.TRANSITIONAL) {
-			return new LocalIterator(linkedList);
-		} else if (stage == STAGE.FINAL) {
-			return finalDataNodes.iterator();
-		}
-		return null;
-	}
-
-	static class LocalIterator implements Iterator<DataNode> {
-
-		LinkedList linkedList;
-		LinkedNode currentNode;
-
-		public LocalIterator(LinkedList linkedList) {
-			this.linkedList = linkedList;
-			this.currentNode = linkedList.getHeader();
-		}
-
-		public boolean hasNext() {
-			if (currentNode == null) {
-				return false;
-			}
-			return true;
-		}
-
-		public DataNode next() {
-			DataNode temp = currentNode.getData();
-			currentNode = currentNode.getNext();
-			
-			return temp;
-		}
-
-		public void remove() {
-			linkedList.remove(currentNode);
-		}
-	}
-
-	static class LinkedList {
-
-		private LinkedNode header;
-		private LinkedNode tail;
-
-		public LinkedNode getHeader() {
-			return header;
-		}
-
-		public LinkedNode getTail() {
-			return tail;
-		}
-
-		public void add(DataNode dataNode) {
-			if (dataNode == null) {
-				return;
-			}
-			
-			if (tail == null) {
-				synchronized (this) {
-					tail = new LinkedNode(dataNode, null, null);
-					header = tail;
-				}
-			} else {
-				synchronized (tail) {
-					LinkedNode previous = tail.getPrevious() == null ? header
-							: tail;
-					tail = new LinkedNode(dataNode, null, previous);
-					previous.setNext(tail);
-				}
-			}
-		}
-
-		public void remove(DataNode dataNode) {
-			LinkedNode currentLinkedNode = header;
-			while (currentLinkedNode != null) {
-				if (currentLinkedNode.getData() == dataNode) {
-					remove(currentLinkedNode);
-					return;
-				}
-				currentLinkedNode = currentLinkedNode.getNext();
-			}
-		}
-
-		public void remove(LinkedNode linkedNode) {
-			if (linkedNode == null) {
-				return;
-			}
-			
-			synchronized (linkedNode) {
-				if (linkedNode.getNext() == null) {
-					if (linkedNode.getPrevious() == null) {
-						header = null;
-						tail = null;
-					} else {
-						linkedNode.getPrevious().setNext(null);
-						tail = linkedNode.getPrevious();
-					}
-				} else {
-					if (linkedNode.getPrevious() == null) {
-						linkedNode.getNext().setPrevious(null);
-						header = linkedNode.next;
-					} else {
-						linkedNode.getNext().setPrevious(
-								linkedNode.getPrevious());
-						linkedNode.getPrevious().setNext(linkedNode.getNext());
-					}
-				}
-			}
-		}
-	}
-
-	static class LinkedNode {
-		private LinkedNode previous;
-		private LinkedNode next;
-		private DataNode data;
-
-		public LinkedNode(DataNode data, LinkedNode nextNode,
-				LinkedNode previousNode) {
-			this.data = data;
-			this.next = nextNode;
-			this.previous = previousNode;
-		}
-
-		public LinkedNode getPrevious() {
-			return previous;
-		}
-
-		public void setPrevious(LinkedNode previous) {
-			this.previous = previous;
-		}
-
-		public LinkedNode getNext() {
-			return next;
-		}
 		
-		public void setNext(LinkedNode next) {
-			this.next = next;
-		}
+		instruction.setToolbox(toolResolver);
 
-		public DataNode getData() {
-			return data;
+		DataNode[] toBeInjected = new DataNode[dataNodes.size()];
+		for (int i = 0; i < dataNodes.size(); i++) {
+			toBeInjected[i] = dataNodeStore.getAndRemove(dataNodes.get(i)
+					.getName(), STAGE.TRANSITIONAL);
+			
+			LOG.debug("DataStoreSize: " + dataNodeStore.getAllDataNodesWithStage(STAGE.TRANSITIONAL).size());
 		}
+		instruction.setRawDataNodes(toBeInjected);
+		return instruction;
+	}
 
-		public void setData(DataNode data) {
-			this.data = data;
+	private Instruction instantizeInstruction(Class instructionClass) {
+		Instruction instruction = null;
+		try {
+			Constructor<Instruction> contructor = instructionClass
+					.getDeclaredConstructor(null);
+			instruction = contructor.newInstance(null);
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			e.printStackTrace();
 		}
+		return instruction;
 	}
 
 }
