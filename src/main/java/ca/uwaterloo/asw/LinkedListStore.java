@@ -5,28 +5,32 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.uwaterloo.asw.DataNode.STAGE;
 
-public class ConcurrencyDataNodeStore implements DataNodeStore {
+public class LinkedListStore implements DataNodeStore {
 
 	/*
-	private ThreadLocal<Iterator<DataNode>> threadLocalIterator = new ThreadLocal<Iterator<DataNode>>() {
-		@Override
-		protected Iterator<DataNode> initialValue() {
-			return new LocalIterator(linkedList);
-		}
-	};
-	*/
-	
-	
+	 * private ThreadLocal<Iterator<DataNode>> threadLocalIterator = new
+	 * ThreadLocal<Iterator<DataNode>>() {
+	 * 
+	 * @Override protected Iterator<DataNode> initialValue() { return new
+	 * LocalIterator(linkedList); } };
+	 */
+
+	private static final Logger LOG = LoggerFactory
+			.getLogger(LinkedListStore.class);
+
 	private LinkedList linkedList = new LinkedList();
 	private List<DataNode> finalDataNodes = new ArrayList<DataNode>();
 
 	public void add(DataNode dataNode) {
 		if (dataNode.getStage() == STAGE.TRANSITIONAL) {
-			finalDataNodes.add(dataNode);
-		} else if (dataNode.getStage() == STAGE.FINAL) {
 			linkedList.add(dataNode);
+		} else if (dataNode.getStage() == STAGE.FINAL) {
+			finalDataNodes.add(dataNode);
 		}
 	}
 
@@ -42,7 +46,7 @@ public class ConcurrencyDataNodeStore implements DataNodeStore {
 		itr = iterator(stage);
 		while (itr.hasNext()) {
 			DataNode next = itr.next();
-			if (itr.next().getName().equals(name)) {
+			if (next.getName().equals(name)) {
 				return next;
 			}
 		}
@@ -51,11 +55,11 @@ public class ConcurrencyDataNodeStore implements DataNodeStore {
 
 	public DataNode getAndRemove(String name, STAGE stage) {
 		DataNode dn = get(name, stage);
-		
+
 		if (dn == null) {
 			return null;
 		}
-		
+
 		if (dn.getStage() == STAGE.TRANSITIONAL) {
 			linkedList.remove(dn);
 		} else if (dn.getStage() == STAGE.FINAL) {
@@ -69,8 +73,10 @@ public class ConcurrencyDataNodeStore implements DataNodeStore {
 	public List<DataNode> getAllDataNodesWithStage(STAGE stage) {
 		if (stage == STAGE.TRANSITIONAL) {
 			List<DataNode> tdn = new ArrayList<DataNode>();
-			
+
 			Iterator<DataNode> itr = iterator(stage);
+			
+			int count = 0;
 			while (itr.hasNext()) {
 				tdn.add(itr.next());
 			}
@@ -78,7 +84,7 @@ public class ConcurrencyDataNodeStore implements DataNodeStore {
 		} else if (stage == STAGE.FINAL) {
 			return finalDataNodes;
 		}
-		
+
 		return null;
 	}
 
@@ -102,11 +108,17 @@ public class ConcurrencyDataNodeStore implements DataNodeStore {
 		}
 
 		public boolean hasNext() {
-			return currentNode == null ? false : true;
+			if (currentNode == null) {
+				return false;
+			}
+			return true;
 		}
 
 		public DataNode next() {
-			return currentNode.getData();
+			DataNode temp = currentNode.getData();
+			currentNode = currentNode.getNext();
+			
+			return temp;
 		}
 
 		public void remove() {
@@ -127,23 +139,22 @@ public class ConcurrencyDataNodeStore implements DataNodeStore {
 			return tail;
 		}
 
-		public void setHeader(LinkedNode header) {
-			this.header = header;
-		}
-
-		public void setTail(LinkedNode tail) {
-			this.tail = tail;
-		}
-
 		public void add(DataNode dataNode) {
+			if (dataNode == null) {
+				return;
+			}
+			
 			if (tail == null) {
-				synchronized (tail) {
+				synchronized (this) {
 					tail = new LinkedNode(dataNode, null, null);
 					header = tail;
 				}
 			} else {
 				synchronized (tail) {
-					tail = new LinkedNode(dataNode, null, tail.previous);
+					LinkedNode previous = tail.getPrevious() == null ? header
+							: tail;
+					tail = new LinkedNode(dataNode, null, previous);
+					previous.setNext(tail);
 				}
 			}
 		}
@@ -153,12 +164,17 @@ public class ConcurrencyDataNodeStore implements DataNodeStore {
 			while (currentLinkedNode != null) {
 				if (currentLinkedNode.getData() == dataNode) {
 					remove(currentLinkedNode);
+					return;
 				}
-				return;
+				currentLinkedNode = currentLinkedNode.getNext();
 			}
 		}
 
 		public void remove(LinkedNode linkedNode) {
+			if (linkedNode == null) {
+				return;
+			}
+			
 			synchronized (linkedNode) {
 				if (linkedNode.getNext() == null) {
 					if (linkedNode.getPrevious() == null) {
@@ -166,10 +182,12 @@ public class ConcurrencyDataNodeStore implements DataNodeStore {
 						tail = null;
 					} else {
 						linkedNode.getPrevious().setNext(null);
+						tail = linkedNode.getPrevious();
 					}
 				} else {
 					if (linkedNode.getPrevious() == null) {
 						linkedNode.getNext().setPrevious(null);
+						header = linkedNode.next;
 					} else {
 						linkedNode.getNext().setPrevious(
 								linkedNode.getPrevious());
@@ -203,13 +221,13 @@ public class ConcurrencyDataNodeStore implements DataNodeStore {
 		public LinkedNode getNext() {
 			return next;
 		}
+		
+		public void setNext(LinkedNode next) {
+			this.next = next;
+		}
 
 		public DataNode getData() {
 			return data;
-		}
-
-		public void setNext(LinkedNode next) {
-			this.next = next;
 		}
 
 		public void setData(DataNode data) {
