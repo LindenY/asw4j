@@ -1,28 +1,45 @@
 package ca.uwaterloo.asw;
 
-import java.util.Date;
-
-public abstract  class Instruction implements Runnable {
+public abstract  class Instruction<R, P> implements Runnable {
 	
-	public abstract void setRawDataNodes(DataNode[] rawDataNodes);
-	public abstract void setToolbox(ToolResolver toolResolver);
+	public abstract void setTools(ToolResolver toolResolver);
 	
 	public abstract void preExecution();
-	public abstract void execute();
+	public abstract P execute(R requiredData);
 	public abstract void postExecution();
-	
-	public abstract DataNode getResult();
 
 	public final void run() {
+		
+		Long st = System.currentTimeMillis();
+		
 		preExecution();
-		Date d = new Date();
-		execute();
-		executionDuration = new Date().getTime() - d.getTime();
+		setResult(execute(requiredData));
 		postExecution();
+		
+		setDuration(System.currentTimeMillis() - st);
 	}
 	
-	private long executionDuration;
-	public long getExecutionDuration() {
-		return executionDuration;
+	protected Long duration;
+	protected P result;
+	protected R requiredData;
+	
+	private void setDuration(Long duration) {
+		this.duration = duration;
+	}
+	
+	private void setResult(P result) {
+		this.result = result;
+	}
+	
+	public void setRequiredData(R requiredData) {
+		this.requiredData = requiredData;
+	}
+	
+	public Long getDuration() {
+		return duration;
+	}
+	
+	public P getResult() {
+		return result;
 	}
 }
