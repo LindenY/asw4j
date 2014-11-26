@@ -18,4 +18,8 @@ public abstract class AbstractInstructionResolver implements InstructionResolver
 		this.dataStore = dataStore;
 	}
 	
+	protected class InstructionNode {
+		
+		// TODO : finish this
+	}
 }
