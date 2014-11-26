@@ -1,6 +1,7 @@
 package ca.uwaterloo.asw.meta;
 
-public @interface RequireDataNode {
+public @interface RequireData {
 	
 	String[] names();
+	Class<?> types();
 }
