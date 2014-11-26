@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>ca.uwaterloo</groupId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0-Beta</version>
 	<artifactId>asw</artifactId>
 	<packaging>jar</packaging>
 
@@ -17,9 +17,10 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
+			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -28,4 +29,3 @@
 	</dependencies>
 
 </project>
-
