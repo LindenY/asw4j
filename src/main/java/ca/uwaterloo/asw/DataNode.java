@@ -1,34 +1,42 @@
 package ca.uwaterloo.asw;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import ca.uwaterloo.asw.reflection.TypeToken;
+
 public class DataNode {
-	
-	public static enum STAGE {
-		TRANSITIONAL,
-		FINAL
+
+	private Map<TypeToken<?>, Object> dataMap;
+
+	public DataNode() {
+		dataMap = new HashMap<TypeToken<?>, Object>();
 	}
 
-	private String name;
-	private STAGE type;
-	private Object data;
-	
-	public DataNode(String name, STAGE type, Object data) {
-		super();
-		this.name = name;
-		this.type = type;
-		this.data = data;
+	public Object put(Object obj) {
+		return put(obj, null);
 	}
 
-	public String getName() {
-		return name;
+	public Object put(Object obj, String name) {
+		if (obj == null) {
+			return null;
+		}
+
+		TypeToken<?> typeToken = TypeToken.get(obj.getClass(), name);
+		return dataMap.put(typeToken, obj);
 	}
 
-	public STAGE getStage() {
-		return type;
+	public <T> T get(Class<? extends T> clazz) {
+		return get(clazz, null);
 	}
 
-	public Object getData() {
-		return data;
+	public <T> T get(Class<? extends T> clazz, String name) {
+		TypeToken<?> typeToken = TypeToken.get(clazz, name);
+		Object obj = dataMap.get(typeToken);
+		if (obj == null) {
+			return null;
+		}
+		return (T) obj;
 	}
-	
-	
+
 }
