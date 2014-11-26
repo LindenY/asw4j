@@ -2,7 +2,9 @@ package ca.uwaterloo.asw;
 
 public abstract  class Instruction<R, P> implements Runnable {
 	
-	public abstract void setTools(ToolResolver toolResolver);
+	public Instruction(ToolResolver toolResolver) {
+		
+	}
 	
 	public abstract void preExecution();
 	public abstract P execute(R requiredData);
