@@ -3,19 +3,19 @@ package ca.uwaterloo.asw;
 public abstract class AbstractInstructionResolver implements InstructionResolver {
 
 	protected ToolResolver toolResolver;
-	protected DataStore dataNodeStore;
+	protected DataStore dataStore;
 	
-	public AbstractInstructionResolver(ToolResolver toolResolver, DataStore dataNodeStore) {
+	public AbstractInstructionResolver(ToolResolver toolResolver, DataStore dataStore) {
 		this.toolResolver = toolResolver;
-		this.dataNodeStore = dataNodeStore;
+		this.dataStore = dataStore;
 	}
 
-	public DataStore getDataNodeStore() {
-		return dataNodeStore;
+	public DataStore getDataStore() {
+		return dataStore;
 	}
 
-	public void setDataNodeStore( DataStore dataNodeStore) {
-		this.dataNodeStore = dataNodeStore;
+	public void setDataStore(DataStore dataStore) {
+		this.dataStore = dataStore;
 	}
 	
 }
