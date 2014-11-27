@@ -22,6 +22,11 @@ public class ReflectionTest {
 		TypeToken<?> d1Token = TypeToken.get(d1.getClass(), null);
 		TypeToken<?> s0Token = TypeToken.get(s0.getClass(), null);
 		TypeToken<?> s1Token = TypeToken.get(s1.getClass(), null);
+		
+		assertTrue(d0Token.equals(d1Token));
+		assertTrue(s0Token.equals(s1Token));
+		assertFalse(d0Token.equals(s0Token));
+		assertFalse(d1Token.equals(s1Token));
 	}
 
 	@Test
@@ -41,16 +46,16 @@ public class ReflectionTest {
 		TypeToken<?> s1Token = TypeToken.get(s1.getClass(), "s");
 		TypeToken<?> s2Token = TypeToken.get(s2.getClass(), "ss");
 		
-		/*System.out.println("Compare d0 and d1 : " + d0Token.equals(d1Token));
-		System.out.println("Compare d0 and d2 : " + d0Token.equals(d2Token));
-		System.out.println("Compare d0 and s0 : " + d0Token.equals(s0Token));
+		assertTrue(d0Token.equals(d1Token));
+		assertFalse(d0Token.equals(d2Token));
+		assertFalse(d0Token.equals(s0Token));
 		
-		System.out.println("Compare s0 and s1 : " + s0Token.equals(s1Token));
-		System.out.println("Compare s0 and s2 : " + s0Token.equals(s2Token));
-		System.out.println("Compare s0 and d0 : " + s0Token.equals(d0Token));*/
+		assertTrue(s0Token.equals(s1Token));
+		assertFalse(s0Token.equals(s2Token));
+		assertFalse(s0Token.equals(d0Token));
 	}
 
-	// TODO: Solving GenericType is taking to much time. Lets think about it
+	// TODO: Solving GenericType is taking too much time. Lets think about it
 	// later.
 	@Ignore
 	@Test

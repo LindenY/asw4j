@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.*;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.uwaterloo.asw.DataNode;
@@ -23,13 +26,13 @@ public class DataNodeTest {
 		dataNode.put(list);
 		
 		Date rDate = dataNode.get(Date.class);
-		System.out.println("Compare class[Date] : " + (rDate == date));
+		assertTrue(rDate == date);
 		
 		String rString = dataNode.get(String.class);
-		System.out.println("Compare class[String] : " + (rString == string));
+		assertTrue(rString == string);
 		
 		List<Long> rList = dataNode.get(ArrayList.class);
-		System.out.println("Compare class[List] : " + (rList == list));
+		assertTrue(rList == list);
 	}
 	
 	@Test
@@ -57,24 +60,74 @@ public class DataNodeTest {
 		dataNode.put(l2, "l2");
 		
 		Date rD0 = dataNode.get(Date.class);
-		System.out.println("Compare class[Date] with name[null] : " + (rD0 == d0));
+		assertTrue(rD0 == d0);
 		Date rD1 = dataNode.get(Date.class, "d1");
-		System.out.println("Compare class[Date] with name[d1] : " + (rD1 == d1));
+		assertTrue(rD1 == d1);
 		Date rD2 = dataNode.get(Date.class, "d2");
-		System.out.println("Compare class[Date] with name[d2] : " + (rD2 == d2));
+		assertTrue(rD2 == d2);
 		
 		String rS0 = dataNode.get(String.class);
-		System.out.println("Compare class[String] with name[null] : " + (rS0 == s0));
+		assertTrue(rS0 == s0);
 		String rS1 = dataNode.get(String.class, "s1");
-		System.out.println("Compare class[String] with name[s1] : " + (rS1 == s1));
+		assertTrue(rS1 == s1);
 		String rS2 = dataNode.get(String.class, "s2");
-		System.out.println("Compare class[String] with name[s1] : " + (rS2 == s2));
+		assertTrue(rS2 == s2);
 		
 		List<Long> rL0 = dataNode.get(ArrayList.class);
-		System.out.println("Compare class[List] with name[null] : " + (rL0 == l0));
+		assertTrue(rL0 == l0);
 		List<Long> rL1 = dataNode.get(ArrayList.class, "l1");
-		System.out.println("Compare class[List] with name[l1] : " + (rL1 == l1));
+		assertTrue(rL1 == l1);
 		List<Long> rL2 = dataNode.get(ArrayList.class, "l2");
-		System.out.println("Compare class[List] with name[l2] : " + (rL2 == l2));
+		assertTrue(rL2 == l2);
+	}
+	
+	@Test
+	public void testPutAndGetWithDuplication() {
+		Date d0 = new Date();
+		Date d1 = new Date();
+		String s0 = "String0";
+		String s1 = "String1";
+		List<Long> l0 = new ArrayList<Long>();
+		List<Long> l1 = new ArrayList<Long>();
+		
+		DataNode dataNode = new DataNode();
+		dataNode.put(d0);
+		dataNode.put(d1);
+		dataNode.put(s0);
+		dataNode.put(s1);
+		dataNode.put(l0);
+		dataNode.put(l1);
+		
+		Date rDate = dataNode.get(Date.class);
+		String rString = dataNode.get(String.class);
+		List<Long> rList = dataNode.get(ArrayList.class);
+		
+		assertTrue(rDate == d1);
+		assertTrue(rString == s1);
+		assertTrue(rList == l1);
+		
+	}
+	
+	@Ignore
+	@Test
+	public void testPutAndGetWithGenericType() {
+		List<String> strList = new ArrayList<String>();
+		List<Date> dateList = new ArrayList<Date>();
+		
+		DataNode dataNode = new DataNode();
+		dataNode.put(strList);
+		dataNode.put(dateList);
+		
+		List rStrList = dataNode.get(strList.getClass());
+		List rDateList = dataNode.get(dateList.getClass());
+		
+		assertTrue(rStrList == strList);
+		assertTrue(rDateList == dateList);
+		assertFalse(rStrList == dateList);
+		assertFalse(rDateList == strList);
+		
+		System.out.println(strList.getClass().getName());
+		System.out.println(dateList.getClass().getName());
+		
 	}
 }
