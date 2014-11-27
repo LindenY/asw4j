@@ -1,11 +1,13 @@
 package ca.uwaterloo.asw.smokeTest;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
+import static org.junit.Assert.*;
 import ca.uwaterloo.asw.reflection.*;
 
 public class ReflectionTest {
@@ -60,11 +62,53 @@ public class ReflectionTest {
 	@Ignore
 	@Test
 	public void testEqualityWithGenericType() {
+		
+		List<String> ls0 = new ArrayList<String>();
+		List<String> ls1 = new ArrayList<String>();
+		List<Date> ld0 = new ArrayList<Date>();
+		List<Date> ld1 = new ArrayList<Date>();
+		
+		TypeToken<?> ls0Token = TypeToken.get(ls0.getClass(), null);
+		TypeToken<?> ls1Token = TypeToken.get(ls1.getClass(), null);
+		TypeToken<?> ld0Token = TypeToken.get(ld0.getClass(), null);
+		TypeToken<?> ld1Token = TypeToken.get(ld1.getClass(), null);
+		
+		assertTrue(ls0Token.equals(ls1Token));
+		assertTrue(ld0Token.equals(ld1Token));
+		
+		assertFalse(ls0Token.equals(ld0Token));
+		assertFalse(ls1Token.equals(ld1Token));
 	}
 
 	@Ignore
 	@Test
 	public void testEqualityWithGenericTypeAndName() {
 
+		List<String> ls0 = new ArrayList<String>();
+		List<String> ls1 = new ArrayList<String>();
+		List<String> ls2 = new ArrayList<String>();
+		List<String> ls3 = new ArrayList<String>();
+		List<Date> ld0 = new ArrayList<Date>();
+		List<Date> ld1 = new ArrayList<Date>();
+		List<Date> ld2 = new ArrayList<Date>();
+		List<Date> ld3 = new ArrayList<Date>();
+		
+		TypeToken<?> ls0Token = TypeToken.get(ls0.getClass(), "s");
+		TypeToken<?> ls1Token = TypeToken.get(ls1.getClass(), "s");
+		TypeToken<?> ls2Token = TypeToken.get(ls2.getClass(), "ss");
+		TypeToken<?> ls3Token = TypeToken.get(ls3.getClass(), "asdf");
+		TypeToken<?> ld0Token = TypeToken.get(ld0.getClass(), "d");
+		TypeToken<?> ld1Token = TypeToken.get(ld1.getClass(), "d");
+		TypeToken<?> ld2Token = TypeToken.get(ld2.getClass(), "dd");
+		TypeToken<?> ld3Token = TypeToken.get(ld3.getClass(), "asdf");
+		
+		assertTrue(ls0Token.equals(ls1Token));
+		assertFalse(ls1Token.equals(ls2Token));
+		assertTrue(ld0Token.equals(ld1Token));
+		assertFalse(ld1Token.equals(ld2Token));
+		
+		assertFalse(ls0Token.equals(ld0Token));
+		assertFalse(ls3Token.equals(ld3Token));
 	}
+
 }
