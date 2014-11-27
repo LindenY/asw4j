@@ -4,5 +4,5 @@ import ca.uwaterloo.asw.Instruction;
 
 public @interface DependOn {
 
-	Class<? extends Instruction<?, ?>> instruction();
+	Class<? extends Instruction<?, ?>>[] instruction();
 }

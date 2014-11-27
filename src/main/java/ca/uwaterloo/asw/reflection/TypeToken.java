@@ -72,4 +72,12 @@ public class TypeToken<T> {
 	public static <T> TypeToken<T> get(Class<T> type, String name) {
 		return new TypeToken<T>(type, name);
 	}
+	
+	public static TypeToken<?> get(Type type) {
+		return new TypeToken<Object>(type, null);
+	}
+
+	public static <T> TypeToken<T> get(Class<T> type) {
+		return new TypeToken<T>(type, null);
+	}
 }
