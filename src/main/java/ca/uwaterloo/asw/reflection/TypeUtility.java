@@ -127,6 +127,16 @@ public class TypeUtility {
 							+ "> is of type " + className);
 		}
 	}
+	
+	@SuppressWarnings("unchecked")
+	public static Type[] getSuperclassTypeParameter(Class<?> subclass) {
+		Type superclass = subclass.getGenericSuperclass();
+		if (superclass instanceof Class) {
+			throw new RuntimeException("Missing type parameter.");
+		}
+		ParameterizedType parameterizedType = (ParameterizedType) superclass;
+		return parameterizedType.getActualTypeArguments();
+	}
 
 	private static final class GenericArrayTypeImpl implements GenericArrayType {
 
