@@ -3,25 +3,35 @@ package ca.uwaterloo.asw;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import ca.uwaterloo.asw.internal.InstructionNode;
+import ca.uwaterloo.asw.reflection.TypeToken;
 
 public class DAGInstructionResolver extends AbstractInstructionResolver {
 
+	private DependencyTree dependencyTree;
+
 	public DAGInstructionResolver(ToolResolver toolResolver, DataStore dataStore) {
 		super(toolResolver, dataStore);
-		// TODO Auto-generated constructor stub
+		dependencyTree = new DependencyTree();
 	}
-	
+
 	public void register(String[] requiredDataNames,
 			Class<?>[] requiredDataTypes, String producedDataName,
 			Class<?> producedDataType,
 			Class<? extends Instruction<?, ?>> instructionClass) {
-		
+
+		dependencyTree.addDependencyNode(new DependencyNode(requiredDataNames,
+				requiredDataTypes, producedDataName, producedDataType,
+				instructionClass));
 	}
 
 	public void register(Class<?>[] requiredDataTypes,
 			Class<?> producedDataType,
 			Class<? extends Instruction<?, ?>> instructionClass) {
-		
+
 	}
 
 	public void register(String[] requiredDataNames, String producedDataName,
@@ -41,13 +51,22 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 	}
 
 	public void register(Class<? extends Instruction<?, ?>> instructionClass) {
-		// TODO Auto-generated method stub
 
+		String[] requireDataNames = InstructionNode
+				.getInstructionRequireDataNames(instructionClass);
+		Class<?>[] requireDataTypes = InstructionNode
+				.getInstructionRequireDataTypes(instructionClass);
+		String produceDataName = InstructionNode
+				.getInstructionProduceDataName(instructionClass);
+		Class<?> produceDataType = InstructionNode
+				.getInstructionProduceDataType(instructionClass);
+
+		register(requireDataNames, requireDataTypes, produceDataName,
+				produceDataType, instructionClass);
 	}
 
 	public int numberOfRegisteredInstruction() {
-		// TODO Auto-generated method stub
-		return 0;
+		return instructionNodes.size();
 	}
 
 	public Instruction<?, ?> resolveInstruction() {
@@ -65,18 +84,42 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 
 	}
 
-	private static class DependencyNode {
+	public void flush() {
 
-		private String dependencyName;
+	}
 
-		private Class<? extends Instruction<?, ?>> self;
-		private List<Class<? extends Instruction<?, ?>>> dependencies;
-		private List<Class<? extends Instruction<?, ?>>> markList;
+	private final class DependencyTree {
 
-		public DependencyNode(
+		private Map<TypeToken<?>, DependencyNode> produceDataMap;
+		private DependencyNode root;
+		private Set<DependencyNode> mud;
+
+		public void addDependencyNode(DependencyNode dependencyNode) {
+
+		}
+
+		public static DependencyNode solveDependencyByProduceData(
+				DependencyNode dependencyNode) {
+
+		}
+
+	}
+
+	private static final class DependencyNode extends InstructionNode {
+
+		private DependencyNode parentNode;
+		private List<DependencyNode> childrenNodes;
+
+		private boolean finished;
+
+		public DependencyNode(String[] requiredDataNames,
+				Class<?>[] requiredDataTypes, String producedDataName,
+				Class<?> producedDataType,
 				Class<? extends Instruction<?, ?>> instructionClass) {
-			self = instructionClass;
-			dependencies = new ArrayList<Class<? extends Instruction<?, ?>>>();
+			super(requiredDataNames, requiredDataTypes, producedDataName,
+					producedDataType, instructionClass);
+
+			childrenNodes = new ArrayList<DAGInstructionResolver.DependencyNode>();
 		}
 
 		public void addDependency(
@@ -84,67 +127,20 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 			dependencies.add(instructionClass);
 		}
 
-		public String getDependencyName() {
-			return dependencyName;
+		public void addChildrenNode(DependencyNode dependencyNode) {
+			dependencyNode.setParentNode(this);
+			childrenNodes.add(dependencyNode);
 		}
 
-		public Class<? extends Instruction<?, ?>> getSelf() {
-			return self;
+		public DependencyNode setParentNode(DependencyNode dependencyNode) {
+			DependencyNode temp = parentNode;
+			parentNode = dependencyNode;
+			return temp;
 		}
 
 		public List<Class<? extends Instruction<?, ?>>> getDependencies() {
 			return dependencies;
 		}
 
-		private void mark(Class<? extends Instruction<?, ?>> instrucionClass) {
-			if (dependencies.remove(instrucionClass)) {
-				if (markList == null) {
-					markList = new ArrayList<Class<? extends Instruction<?, ?>>>();
-				}
-				markList.add(instrucionClass);
-			}
-		}
-
-		private void unmarkAll() {
-			if (markList != null) {
-				dependencies.addAll(markList);
-				markList = null;
-			}
-		}
-
-		public static List<DependencyNode> solveDAG(
-				List<DependencyNode> dependencyNodes) {
-			List<DependencyNode> resultList = new ArrayList<DependencyNode>();
-
-			while (dependencyNodes.size() > 0) {
-
-				boolean containCircle = true;
-
-				Iterator<DependencyNode> iterator = dependencyNodes.iterator();
-				while (iterator.hasNext()) {
-					DependencyNode nextDn = iterator.next();
-					if (nextDn.getDependencies().size() <= 0) {
-
-						Iterator<DependencyNode> subIterator = dependencyNodes
-								.iterator();
-						while (subIterator.hasNext()) {
-							subIterator.next().mark(nextDn.self);
-						}
-
-						nextDn.unmarkAll();
-						resultList.add(nextDn);
-						dependencyNodes.remove(nextDn);
-						containCircle = false;
-					}
-				}
-
-				if (containCircle) {
-					throw new IllegalArgumentException(
-							"Can't not solver DAG because there is at least one circle");
-				}
-			}
-
-			return resultList;
-		}
 	}
 }
