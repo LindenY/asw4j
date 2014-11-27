@@ -35,16 +35,6 @@ public class TypeToken<T> {
 		return hashCode;
 	}
 
-	@SuppressWarnings("unchecked")
-	static Type[] getSuperclassTypeParameter(Class<?> subclass) {
-		Type superclass = subclass.getGenericSuperclass();
-		if (superclass instanceof Class) {
-			throw new RuntimeException("Missing type parameter.");
-		}
-		ParameterizedType parameterizedType = (ParameterizedType) superclass;
-		return parameterizedType.getActualTypeArguments();
-	}
-
 	@Override
 	public final int hashCode() {
 		return this.hashCode;
