@@ -1,5 +1,7 @@
 package ca.uwaterloo.asw;
 
+import ca.uwaterloo.asw.DataNode;
+
 public abstract  class Instruction<R, P> implements Runnable {
 	
 	public Instruction(ToolResolver toolResolver) {
@@ -33,8 +35,8 @@ public abstract  class Instruction<R, P> implements Runnable {
 		this.result = result;
 	}
 	
-	public void setRequiredData(R requiredData) {
-		this.requiredData = requiredData;
+	public void setRequiredData(DataNode requiredData) {
+		this.requiredData = (R) requiredData.get(requiredData.getClass());
 	}
 	
 	public Long getDuration() {
