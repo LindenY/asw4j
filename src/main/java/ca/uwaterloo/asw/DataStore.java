@@ -1,37 +1,38 @@
 package ca.uwaterloo.asw;
 
-import java.util.Collection;
 import java.util.List;
+
+import ca.uwaterloo.asw.DataNode;
+import ca.uwaterloo.asw.reflection.TypeToken;
 
 public interface DataStore {
 
-	public boolean add(Object obj);
+	public void add(Object obj);
 	
-	public boolean add(Object obj, String name);
+	public void add(Object obj, String name);
 
-	public boolean addAll(Collection<Object> objs);
+	public void addAll(List<Object> objs, List<String> names);
 
 	public boolean contain(Object obj);
 
-	public <T> boolean contain(Class<T> clazz);
+	public boolean contain(Class<?> type);
 
-	public <T> boolean contain(Class<T> clazz, String name);
+	public boolean contain(Class<?> type, String name);
 	
-	public boolean contain(String name);
+	public boolean contain(TypeToken<?> typeToken);
 	
-	public <T> T get(Class<T> clazz);
+	public boolean contain(List<Object> objs, List<String> names);
 	
-	public <T> T get(Class<T> clazz, String name);
+	public boolean contain(List<TypeToken<?>> typeTokens);
 	
-	public DataNode get(String name);
+	public DataNode getAndRemove(Class<?> type);
 	
-	public <T> List<T> getAll(Class<T> clazz);
+	public DataNode getAndRemove(Class<?> type, String name);
 	
-	public <T> List<T> getAll(Class<T> clazz, String name);
+	public DataNode getAndRemove(TypeToken<?> typeToken);
 	
-	public List<DataNode> getAll(String name);
+	public DataNode getAndRemoveAll(List<Class<?>> types, List<String> names);
+	
+	public DataNode getAndRemoveAll(List<TypeToken<?>> typeTokens);
 
-	public boolean remove(Object obj);
-
-	public boolean mark(Object obj);
 }
