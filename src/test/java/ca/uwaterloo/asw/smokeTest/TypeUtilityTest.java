@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import ca.uwaterloo.asw.DataNode;
 import ca.uwaterloo.asw.reflection.TypeUtility;
-import ca.uwaterloo.asw.testObjects.TestInstrucion0;
+import ca.uwaterloo.asw.testObjects.TestInstruction0;
 import ca.uwaterloo.asw.testObjects.TestInstruction1;
 
 public class TypeUtilityTest {
@@ -23,7 +23,7 @@ public class TypeUtilityTest {
 		Type dataNodeType = (Type) DataNode.class;
 		
 		Type[] rInstruction0 = TypeUtility
-				.getSuperclassTypeParameter(TestInstrucion0.class);
+				.getSuperclassTypeParameter(TestInstruction0.class);
 		Type[] rInstruction1 = TypeUtility
 				.getSuperclassTypeParameter(TestInstruction1.class);
 		

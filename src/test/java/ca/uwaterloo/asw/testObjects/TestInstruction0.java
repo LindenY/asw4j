@@ -5,9 +5,9 @@ import java.util.Date;
 import ca.uwaterloo.asw.Instruction;
 import ca.uwaterloo.asw.ToolResolver;
 
-public class TestInstrucion0 extends Instruction<Date, String> {
+public class TestInstruction0 extends Instruction<Date, String> {
 
-	public TestInstrucion0(ToolResolver toolResolver) {
+	public TestInstruction0(ToolResolver toolResolver) {
 		super(toolResolver);
 		// TODO Auto-generated constructor stub
 	}
