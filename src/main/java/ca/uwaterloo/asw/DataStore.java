@@ -21,15 +21,15 @@ public interface DataStore {
 	
 	public boolean contain(TypeToken<?> typeToken);
 	
-	public boolean contain(List<Object> objs, List<String> names);
+	public boolean contain(List<Class<?>> types, List<String> names);
 	
 	public boolean contain(List<TypeToken<?>> typeTokens);
 	
-	public DataNode getAndRemove(Class<?> type);
+	public <T> T getAndRemove(Class<T> type);
 	
-	public DataNode getAndRemove(Class<?> type, String name);
+	public <T> T getAndRemove(Class<T> type, String name);
 	
-	public DataNode getAndRemove(TypeToken<?> typeToken);
+	public <T> T getAndRemove(TypeToken<T> typeToken);
 	
 	public DataNode getAndRemoveAll(List<Class<?>> types, List<String> names);
 	
