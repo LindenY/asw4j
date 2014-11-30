@@ -40,7 +40,6 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 	public void register(Class<?>[] requiredDataTypes,
 			Class<?> producedDataType,
 			Class<? extends Instruction<?, ?>> instructionClass) {
-
 	}
 
 	public void register(String[] requiredDataNames, String producedDataName,
@@ -49,14 +48,11 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 
 	public void register(String[] requiredDataNames,
 			Class<? extends Instruction<?, ?>> instructionClass) {
-		// TODO Auto-generated method stub
 
 	}
 
 	public void register(String producedDataName,
 			Class<? extends Instruction<?, ?>> instructionClass) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public void register(Class<? extends Instruction<?, ?>> instructionClass) {

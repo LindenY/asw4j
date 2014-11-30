@@ -244,6 +244,12 @@ public class InstructionNode {
 
 	public static final Class<?> getInstructionProduceDataType(
 			Class<? extends Instruction<?, ?>> instructionClass) {
+		
+		Type type = getInstructionActualParameterizedArgumentAtIndex(instructionClass, 1);
+		if (type != null) {
+			return (Class<?>) type;
+		}
+		
 		ProduceData produceDataAnnotation = instructionClass
 				.getAnnotation(ProduceData.class);
 		if (produceDataAnnotation != null) {
