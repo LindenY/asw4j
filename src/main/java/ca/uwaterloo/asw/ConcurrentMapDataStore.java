@@ -2,7 +2,6 @@ package ca.uwaterloo.asw;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,6 +28,7 @@ public class ConcurrentMapDataStore implements DataStore {
 
 		if (objs == null) {
 			objs = new ArrayList<Object>();
+			concurrentMap.put(typeToken, objs);
 		}
 
 		synchronized (objs) {
@@ -36,14 +36,9 @@ public class ConcurrentMapDataStore implements DataStore {
 		}
 	}
 
-	public void addAll(List<Object> objs, List<String> names) {
-		if (objs.size() != names.size()) {
-			throw new IllegalArgumentException(
-					"The sizes of two lists do not match.");
-		}
-
-		for (int i = 0; i < objs.size(); i++) {
-			add(objs.get(i), names.get(i));
+	public void addAll(List<Object> objs) {
+		for (Object obj : objs) {
+			add(obj);
 		}
 	}
 
@@ -91,23 +86,7 @@ public class ConcurrentMapDataStore implements DataStore {
 		return objs.size() > 0 ? true : false;
 	}
 
-	public boolean contain(List<Class<?>> types, List<String> names) {
-
-		if (types.size() != names.size()) {
-			throw new IllegalArgumentException(
-					"The sizes of two lists do not match.");
-		}
-
-		for (int i = 0; i < types.size(); i++) {
-			if (!contain(types.get(i), names.get(0))) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	public boolean contain(List<TypeToken<?>> typeTokens) {
+	public boolean containAll(List<TypeToken<?>> typeTokens) {
 		for (TypeToken<?> typeToken : typeTokens) {
 			if (!contain(typeToken)) {
 				return false;
@@ -142,21 +121,6 @@ public class ConcurrentMapDataStore implements DataStore {
 		return (T) obj;
 	}
 
-	public DataNode getAndRemoveAll(List<Class<?>> types, List<String> names) {
-
-		if (types.size() != names.size()) {
-			throw new IllegalArgumentException(
-					"The sizes of two lists do not match.");
-		}
-
-		DataNode dataNode = new DataNode();
-
-		for (int i = 0; i < types.size(); i++) {
-			dataNode.put(TypeToken.get(types.get(i), names.get(i)));
-		}
-
-		return dataNode;
-	}
 
 	public DataNode getAndRemoveAll(List<TypeToken<?>> typeTokens) {
 

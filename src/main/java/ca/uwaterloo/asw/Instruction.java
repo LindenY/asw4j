@@ -35,7 +35,12 @@ public abstract  class Instruction<R, P> implements Runnable {
 		this.result = result;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void setRequiredData(DataNode requiredData) {
+		if (requiredData.getClass() == DataNode.class) {
+			this.requiredData = (R) requiredData;
+			return;
+		}
 		this.requiredData = (R) requiredData.get(requiredData.getClass());
 	}
 	
