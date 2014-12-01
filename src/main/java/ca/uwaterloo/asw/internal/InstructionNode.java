@@ -41,11 +41,14 @@ public class InstructionNode {
 		supportSingleton = getInstructionSingletonSupport(instructionClass);
 
 		requireDatas = new ArrayList<TypeToken<?>>();
+		
+		RequireData requireDataAnnotation = instructionClass
+				.getAnnotation(RequireData.class);
+		
+		checkPreconditionOfRequireDatas(requireDataAnnotation, instructionClass);
 		for (int i = 0; i < requireDataTypes.length; i++) {
 			Type type = requireDataTypes[i];
-			String name = (requireDataNames == null || requireDataNames.length <= i) 
-					? null
-					: requireDataNames[i];
+			String name = requireDataNames[i];
 			requireDatas.add(TypeToken.get(type, name));
 		}
 
@@ -245,4 +248,21 @@ public class InstructionNode {
 			throw new IllegalArgumentException();
 		}
 	}
+	
+	private static final void checkPreconditionOfRequireDatas (
+			RequireData requireDataAnnotation,
+			Class<? extends Instruction<?, ?>> instructionClass) {
+
+		String[] names = requireDataAnnotation.names();
+		Class<?>[] types = requireDataAnnotation.types();
+
+		if (types == null || types.length == 0) {
+			throw new IllegalArgumentException();
+		} else if (types.length == 1 && names.length > 1) {
+			throw new IllegalArgumentException();
+		} else if (names.length != types.length) {
+			throw new IllegalArgumentException();
+		}
+	}
+	
 }
