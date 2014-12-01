@@ -25,16 +25,16 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 			Class<?>[] requireDataTypes, String produceDataName,
 			Class<?> produceDataType,
 			Class<? extends Instruction<?, ?>> instructionClass) {
-
+		
 		DependencyNode newDN = new DependencyNode(requireDataNames,
 				requireDataTypes, produceDataName, produceDataType,
 				instructionClass);
-		dependencyNodes.add(newDN);
 
 		for (Class<? extends Instruction<?, ?>> ins : newDN.getDependencies()) {
 			register(ins);
 		}
-
+		dependencyNodes.add(newDN);
+		
 		dependencyTree.solveDependencyTree();
 	}
 
@@ -78,15 +78,14 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 
 		Iterator<DependencyNode> iterator = dependencyTree.dependentsOrder
 				.iterator();
-
-		System.out.println("DependentsOrder size:"
-				+ dependencyTree.dependentsOrder.size());
-
+		
+		System.out.println();
+		
 		while (iterator.hasNext()) {
 			DependencyNode nextDN = iterator.next();
-
-			System.out.println(nextDN.state);
-
+			
+			System.out.println(nextDN.getInstruction().getName() + " : " + nextDN.state);
+			
 			if (nextDN.state == DependencyNode.STATE.blocking
 					|| nextDN.state == DependencyNode.STATE.terminated) {
 				continue;
@@ -94,6 +93,7 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 
 				if (dataStore.containAll(nextDN.getRequireDatas())) {
 
+					nextDN.setState(DependencyNode.STATE.running);
 					Instruction<?, ?> instruction = nextDN
 							.getInstructionInstance(toolResolver);
 					instruction.setRequireData(dataStore.getAndRemoveAll(nextDN
@@ -101,9 +101,9 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 					return instruction;
 
 				} else {
-
+					
 					if (nextDN.issuedNum.get() <= 0) {
-						boolean readyToTerminate = true;
+						/*boolean readyToTerminate = true;
 						for (DependencyNode cdn : nextDN.children) {
 							if (cdn.state != DependencyNode.STATE.terminated) {
 								readyToTerminate = false;
@@ -112,8 +112,10 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 						}
 
 						if (readyToTerminate) {
-							nextDN.state = DependencyNode.STATE.terminated;
-						}
+							nextDN.setState(DependencyNode.STATE.terminated);
+						}*/
+						
+						nextDN.setState(DependencyNode.STATE.terminated);
 					}
 				}
 
@@ -135,8 +137,6 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 
 	private class DependencyTree {
 
-		// private ConcurrentHashMap<Class<? extends Instruction<?, ?>>,
-		// DependencyNode> instructionClassMap;
 		private HashMap<Class<? extends Instruction<?, ?>>, DependencyNode> instructionClassMap;
 		private List<DependencyNode> dependentsOrder;
 
@@ -148,12 +148,9 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		// TypeToken
 		// object and make it partial support GenericType.
 		public void solveDependencyTree() {
-
-			Map<Class<? extends Instruction<?, ?>>, DependencyNode> dependentMap = new HashMap<Class<? extends Instruction<?, ?>>, DAGInstructionResolver.DependencyNode>();
-			/*
-			 * instructionClassMap = new ConcurrentHashMap<Class<? extends
-			 * Instruction<?,?>>, DAGInstructionResolver.DependencyNode>();
-			 */
+			
+			Map<Class<? extends Instruction<?, ?>>, DependencyNode> dependentMap = 
+					new HashMap<Class<? extends Instruction<?, ?>>, DAGInstructionResolver.DependencyNode>();
 			instructionClassMap = new HashMap<Class<? extends Instruction<?, ?>>, DAGInstructionResolver.DependencyNode>();
 
 			Iterator<DependencyNode> dnListIterator = dependencyNodes
@@ -186,8 +183,10 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 				DependencyNode child = instructionClassMap.get(nextIC);
 				DependencyNode parent = dependentMap.get(nextIC);
 
-				child.setParent(parent);
-				parent.addChild(child);
+				if (child != null) {
+					child.setParent(parent);
+					parent.addChild(child);
+				}
 			}
 
 			generateDependentOrder();
@@ -234,7 +233,7 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		}
 
 		public enum STATE {
-			ready, blocking, terminated
+			ready, running, blocking, terminated
 		}
 
 		private DependencyNode parent;
@@ -256,10 +255,12 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 			pool = new ArrayList<Instruction<?, ?>>();
 		}
 
+		@SuppressWarnings("unused")
 		public DependencyNode getParent() {
 			return parent;
 		}
 
+		@SuppressWarnings("unused")
 		public List<DependencyNode> getChildren() {
 			return children;
 		}
@@ -274,6 +275,7 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 
 		public void clear() {
 			mark = MARK.unmark;
+			state = STATE.ready;
 			parent = null;
 			children = new ArrayList<DAGInstructionResolver.DependencyNode>();
 		}
@@ -303,12 +305,12 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 				instruction = super.getInstructionInstance(toolResolver);
 			} else {
 				synchronized (pool) {
-					instruction = pool.remove(pool.size());
+					instruction = pool.remove(pool.size() - 1);
 				}
 			}
 
 			if (issuedNum.get() > 0 && supportSingleton) {
-				state = STATE.blocking;
+				setState(STATE.blocking);
 			}
 
 			return instruction;
@@ -321,6 +323,41 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 			}
 
 			issuedNum.decrementAndGet();
+			if (issuedNum.get() == 0 && supportSingleton) {
+				setState(STATE.ready);
+			}
+		}
+		
+		public void setState(STATE state) {
+			
+			System.out.println();
+			System.out.println("----------------Start setState-----------------");
+			
+			System.out.println(getInstruction().getName());
+			System.out.println("Parent: " + parent.getInstruction().getName());
+			System.out.println("Original State: " + this.state);
+			System.out.println("To State: " + state);
+			
+			System.out.println("----------------End setState-------------------");
+			System.out.println();
+			
+			if (parent != null && !parent.isSupportAsync()) {
+				if (state != STATE.terminated) {
+					parent.setState(STATE.blocking);
+				} else {
+					boolean isReady = true;
+					for (DependencyNode child : parent.children) {
+						if (child.state != STATE.terminated) {
+							isReady = false;
+						}
+					}
+					if (isReady) {
+						parent.setState(STATE.ready);
+					}
+				}
+			}
+			
+			this.state = state;
 		}
 
 	}
