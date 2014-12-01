@@ -98,14 +98,27 @@ public class DataNodeTest {
 		dataNode.put(l0);
 		dataNode.put(l1);
 		
+		assertTrue(dataNode.size() == 6);
+		
 		Date rDate = dataNode.get(Date.class);
 		String rString = dataNode.get(String.class);
 		List<Long> rList = dataNode.get(ArrayList.class);
 		
-		assertTrue(rDate == d1);
-		assertTrue(rString == s1);
-		assertTrue(rList == l1);
+		assertTrue(rDate == d0);
+		assertTrue(rString == s0);
+		assertTrue(rList == l0);
 		
+		List<Date> rDateList = dataNode.getAll(Date.class);
+		List<String> rStringList = dataNode.getAll(String.class);
+		List<ArrayList> rListList = dataNode.getAll(ArrayList.class);
+		
+		assertFalse(rDateList == null);
+		assertFalse(rStringList == null);
+		assertFalse(rListList == null);
+		
+		assertTrue(rDateList.size() == 2);
+		assertTrue(rStringList.size() == 2);
+		assertTrue(rListList.size() == 2);
 	}
 	
 	@Ignore
