@@ -1,6 +1,5 @@
 package ca.uwaterloo.asw.reflection;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 public class TypeToken<T> {
@@ -52,7 +51,7 @@ public class TypeToken<T> {
 
 	@Override
 	public final String toString() {
-		return TypeUtility.typeToString(type);
+		return TypeUtility.typeToString(type) + " " + name;
 	}
 
 	public static TypeToken<?> get(Type type, String name) {
