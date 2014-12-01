@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.uwaterloo.asw.internal.InstructionNode;
+
 public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 
 	private static final Logger LOG = LoggerFactory
@@ -15,15 +17,12 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 
 	private ThreadPool threadPool;
 
-	public ThreadPoolWorkerManager(
-			int coreNumWorkers, 
-			int maxNumWorkers,
-			ToolResolver toolResolver,
-			DataStore dataNodeStore, 
+	public ThreadPoolWorkerManager(int coreNumWorkers, int maxNumWorkers,
+			ToolResolver toolResolver, DataStore dataNodeStore,
 			InstructionResolver instructionResolver) {
 
-		super(coreNumWorkers, maxNumWorkers, toolResolver,
-				dataNodeStore, instructionResolver);
+		super(coreNumWorkers, maxNumWorkers, toolResolver, dataNodeStore,
+				instructionResolver);
 
 		BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(30);
 		threadPool = new ThreadPool(coreNumWorkers, coreNumWorkers, 10,
@@ -37,7 +36,8 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 	@Override
 	public T start() {
 
-		Instruction<?, ?> instruction = instructionResolver.resolveInstruction();
+		Instruction<?, ?> instruction = instructionResolver
+				.resolveInstruction();
 		while (instruction != null) {
 			threadPool.execute(instruction);
 			instruction = instructionResolver.resolveInstruction();
@@ -53,7 +53,7 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 			} catch (InterruptedException e) {
 				LOG.debug("Wake up from " + e.getLocalizedMessage());
 			}
-			
+
 			threadPool.shutdown();
 		}
 
@@ -86,7 +86,8 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 
 		@Override
 		protected void beforeExecute(Thread t, Runnable r) {
-			instructionResolver.beforInstructionExecution((Instruction<?, ?>) r);
+			instructionResolver
+					.beforInstructionExecution((Instruction<?, ?>) r);
 			super.beforeExecute(t, r);
 		}
 
@@ -94,13 +95,11 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 		protected void afterExecute(Runnable r, Throwable t) {
 
 			Instruction<?, ?> finishedInstruction = (Instruction<?, ?>) r;
-			Instruction<?, ?> newInstruction = null;
-			
-			dataStore.add(finishedInstruction.getResult());
-			newInstruction = instructionResolver.resolveInstruction();
-			
+			workerManager.addInstructionProduceDataToDataStore(finishedInstruction);
 			instructionResolver.afterInstructionExecution(finishedInstruction);
-
+			
+			Instruction<?, ?> newInstruction = instructionResolver
+					.resolveInstruction();
 			if (newInstruction == null) {
 				if (getActiveCount() <= 1 && getQueue().size() <= 0) {
 					synchronized (workerManager) {
@@ -113,4 +112,5 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 			super.afterExecute(r, t);
 		}
 	}
+
 }
