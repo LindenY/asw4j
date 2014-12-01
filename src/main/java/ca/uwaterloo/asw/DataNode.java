@@ -1,56 +1,83 @@
 package ca.uwaterloo.asw;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import ca.uwaterloo.asw.reflection.TypeToken;
 
 public class DataNode {
 
-	private Map<TypeToken<?>, Object> dataMap;
+	private Map<TypeToken<?>, List<Object>> dataMap;
+	private int numObjs = 0;
 
 	public DataNode() {
-		dataMap = new HashMap<TypeToken<?>, Object>();
+		dataMap = new HashMap<TypeToken<?>, List<Object>>();
 	}
 
-	public Object put(Object obj) {
-		return put(obj, null);
+	public void put(Object obj) {
+		put(obj, null);
 	}
 
-	public Object put(Object obj, String name) {
+	public void put(Object obj, String name) {
 		if (obj == null) {
-			return null;
+			return;
 		}
 
 		TypeToken<?> typeToken = TypeToken.get(obj.getClass(), name);
-		return dataMap.put(typeToken, obj);
+		List<Object> objs = dataMap.get(typeToken);
+		if (objs == null) {
+			objs = new ArrayList<Object>();
+			dataMap.put(typeToken, objs);
+		}
+		objs.add(obj);
+		numObjs ++;
 	}
 
-	public <T> T get(Class<? extends T> clazz) {
+	public <T> T get(Class<T> clazz) {
 		return get(clazz, null);
 	}
 
-	public <T> T get(Class<? extends T> clazz, String name) {
+	public <T> T get(Class<T> clazz, String name) {
 		return get(TypeToken.get(clazz, name));
 	}
 	
 	public <T> T get(TypeToken<T> typeToken) {
-		Object obj = dataMap.get(typeToken);
-		if (obj == null) {
+		return (T) getAll(typeToken).get(0);
+	}
+	
+	public <T> List<T> getAll(Class<T> clazz) {
+		return getAll(clazz, null);
+	}
+	
+	public <T> List<T> getAll(Class<T> clazz, String name) {
+		return getAll(TypeToken.get(clazz, name));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T> List<T> getAll(TypeToken<T> typeToken) {
+		
+		List<T> objs = (List<T>) dataMap.get(typeToken);
+		if (objs == null || objs.size() <= 0) {
 			return null;
 		}
-		return (T) obj;
+		return objs;
 	}
 	
-	public Set<TypeToken<?>> getTypeSet() {
-		return dataMap.keySet();
+	public int size() {
+		return numObjs;
 	}
 	
-	public Collection<Object> getValues() {
-		return dataMap.values();
+	public List<Object> values() {
+		List<Object> values = null;
+		for (List<Object> objs : dataMap.values()) {
+			if (values == null) {
+				values = objs;
+			} else {
+				values.addAll(values);
+			}
+		}
+		return values;
 	}
-
 }
