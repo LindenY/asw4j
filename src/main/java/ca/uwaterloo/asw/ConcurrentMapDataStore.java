@@ -2,7 +2,9 @@ package ca.uwaterloo.asw;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -87,9 +89,23 @@ public class ConcurrentMapDataStore implements DataStore {
 	}
 
 	public boolean containAll(List<TypeToken<?>> typeTokens) {
+
+		Map<TypeToken<?>, Integer> tokenCountMap = new HashMap<TypeToken<?>, Integer>();
+
 		for (TypeToken<?> typeToken : typeTokens) {
+
+			tokenCountMap.put(
+					typeToken,
+					(tokenCountMap.get(typeToken) == null) ? 1 : tokenCountMap
+							.get(typeToken) + 1);
+
 			if (!contain(typeToken)) {
 				return false;
+			} else {
+				if (concurrentMap.get(typeToken).size() < tokenCountMap
+						.get(typeToken)) {
+					return false;
+				}
 			}
 		}
 		return true;
@@ -121,13 +137,12 @@ public class ConcurrentMapDataStore implements DataStore {
 		return (T) obj;
 	}
 
-
 	public DataNode getAndRemoveAll(List<TypeToken<?>> typeTokens) {
 
 		DataNode dataNode = new DataNode();
 
 		for (TypeToken<?> typeToken : typeTokens) {
-			dataNode.put(getAndRemove(typeToken));
+			dataNode.put(getAndRemove(typeToken), typeToken.getName());
 		}
 
 		return dataNode;
