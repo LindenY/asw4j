@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.uwaterloo.asw.internal.InstructionNode;
+import ca.uwaterloo.asw.reflection.TypeToken;
 
 public class DAGInstructionResolver extends AbstractInstructionResolver {
 
@@ -33,12 +34,11 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		for (Class<? extends Instruction<?, ?>> ins : newDN.getDependencies()) {
 			register(ins);
 		}
-		
+
 		dependencyTree.solveDependencyTree();
 	}
 
-	public void register(Class<?>[] requireDataTypes,
-			Class<?> produceDataType,
+	public void register(Class<?>[] requireDataTypes, Class<?> produceDataType,
 			Class<? extends Instruction<?, ?>> instructionClass) {
 	}
 
@@ -76,24 +76,32 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 
 	public Instruction<?, ?> resolveInstruction() {
 
-		Iterator<DependencyNode> iterator = dependencyTree.dependentsOrder.iterator();
-		
+		Iterator<DependencyNode> iterator = dependencyTree.dependentsOrder
+				.iterator();
+
+		System.out.println("DependentsOrder size:"
+				+ dependencyTree.dependentsOrder.size());
+
 		while (iterator.hasNext()) {
 			DependencyNode nextDN = iterator.next();
-			
-			if (nextDN.state == DependencyNode.STATE.blocking || 
-					nextDN.state == DependencyNode.STATE.terminated ) {
+
+			System.out.println(nextDN.state);
+
+			if (nextDN.state == DependencyNode.STATE.blocking
+					|| nextDN.state == DependencyNode.STATE.terminated) {
 				continue;
 			} else {
-				
-				if (dataStore.contain(nextDN.getRequireDatas())) {
-					
-					Instruction<?, ?> instruction = nextDN.getInstructionInstance(toolResolver);
-					instruction.setRequireData(dataStore.getAndRemoveAll(nextDN.getRequireDatas()));
+
+				if (dataStore.containAll(nextDN.getRequireDatas())) {
+
+					Instruction<?, ?> instruction = nextDN
+							.getInstructionInstance(toolResolver);
+					instruction.setRequireData(dataStore.getAndRemoveAll(nextDN
+							.getRequireDatas()));
 					return instruction;
-					
+
 				} else {
-					
+
 					if (nextDN.issuedNum.get() <= 0) {
 						boolean readyToTerminate = true;
 						for (DependencyNode cdn : nextDN.children) {
@@ -102,16 +110,16 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 								break;
 							}
 						}
-						
+
 						if (readyToTerminate) {
 							nextDN.state = DependencyNode.STATE.terminated;
 						}
 					}
 				}
+
 			}
 		}
-		
-		
+
 		return null;
 	}
 
@@ -120,124 +128,132 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 	}
 
 	public void afterInstructionExecution(Instruction<?, ?> instruction) {
-		DependencyNode dn = dependencyTree.instructionClassMap.get(instruction.getClass());
+		DependencyNode dn = dependencyTree.instructionClassMap.get(instruction
+				.getClass());
 		dn.returnInstructionInstance(instruction);
 	}
 
 	private class DependencyTree {
-		
-		//private ConcurrentHashMap<Class<? extends Instruction<?, ?>>, DependencyNode> instructionClassMap;
+
+		// private ConcurrentHashMap<Class<? extends Instruction<?, ?>>,
+		// DependencyNode> instructionClassMap;
 		private HashMap<Class<? extends Instruction<?, ?>>, DependencyNode> instructionClassMap;
 		private List<DependencyNode> dependentsOrder;
-		
+
 		// TODO : Using Instruction Class as key in map can potentially have
 		// bug, because all parameterized arguments are removed from
 		// GenericType, which means that the key would be identical for
 		// different instruction class. We can use TypeToken as the literal
-		// representation of instruction class, which requires us to fix the TypeToken
+		// representation of instruction class, which requires us to fix the
+		// TypeToken
 		// object and make it partial support GenericType.
 		public void solveDependencyTree() {
 
-			Map<Class<? extends Instruction<?, ?>>, DependencyNode> dependentMap = 
-					new HashMap<Class<? extends Instruction<?, ?>>, DAGInstructionResolver.DependencyNode>();
-			/*instructionClassMap =
-					new ConcurrentHashMap<Class<? extends Instruction<?,?>>, DAGInstructionResolver.DependencyNode>();*/
-			instructionClassMap =
-					new HashMap<Class<? extends Instruction<?,?>>, DAGInstructionResolver.DependencyNode>();
-			
-			Iterator<DependencyNode> dnListIterator = dependencyNodes.iterator();
+			Map<Class<? extends Instruction<?, ?>>, DependencyNode> dependentMap = new HashMap<Class<? extends Instruction<?, ?>>, DAGInstructionResolver.DependencyNode>();
+			/*
+			 * instructionClassMap = new ConcurrentHashMap<Class<? extends
+			 * Instruction<?,?>>, DAGInstructionResolver.DependencyNode>();
+			 */
+			instructionClassMap = new HashMap<Class<? extends Instruction<?, ?>>, DAGInstructionResolver.DependencyNode>();
+
+			Iterator<DependencyNode> dnListIterator = dependencyNodes
+					.iterator();
 			while (dnListIterator.hasNext()) {
 				DependencyNode nextDNinList = dnListIterator.next();
-				
+
 				nextDNinList.clear();
-				
-				DependencyNode duplicateDependent = dependentMap.put(nextDNinList.getInstruction(), nextDNinList);
-				if (duplicateDependent != null) {
-					// TODO : change to a more explicit exception
-					throw new IllegalArgumentException("Duplicated parent node");
+
+				for (Class<? extends Instruction<?, ?>> dependentInstructionClass : nextDNinList
+						.getDependencies()) {
+					DependencyNode duplicateDependent = dependentMap.put(
+							dependentInstructionClass, nextDNinList);
+					if (duplicateDependent != null) {
+						// TODO : change to a more explicit exception
+						throw new IllegalArgumentException(
+								"Duplicated parent node");
+					}
 				}
-				
-				instructionClassMap.put(nextDNinList.getInstruction(), nextDNinList);
+
+				instructionClassMap.put(nextDNinList.getInstruction(),
+						nextDNinList);
 			}
-			
-			
-			Iterator<Class<? extends Instruction<?, ?>>> dependentKeySetIterator 
-				= dependentMap.keySet().iterator();
+
+			Iterator<Class<? extends Instruction<?, ?>>> dependentKeySetIterator = dependentMap
+					.keySet().iterator();
 			while (dependentKeySetIterator.hasNext()) {
-				Class<? extends Instruction<?, ?>> nextIC = dependentKeySetIterator.next();
+				Class<? extends Instruction<?, ?>> nextIC = dependentKeySetIterator
+						.next();
 				DependencyNode child = instructionClassMap.get(nextIC);
 				DependencyNode parent = dependentMap.get(nextIC);
-				
+
 				child.setParent(parent);
 				parent.addChild(child);
 			}
-			
+
 			generateDependentOrder();
 		}
-		
+
 		private void generateDependentOrder() {
-			
+
 			dependentsOrder = new ArrayList<DAGInstructionResolver.DependencyNode>();
-			
+
 			Iterator<DependencyNode> iterator = dependencyNodes.iterator();
 			while (iterator.hasNext()) {
 				DependencyNode nextDN = iterator.next();
 				visitDAGNode(nextDN);
 			}
 		}
-		
+
 		private void visitDAGNode(DependencyNode dependencyNode) {
-			
+
 			if (dependencyNode == null) {
 				return;
 			}
-			
+
 			if (dependencyNode.mark(DependencyNode.MARK.marked)) {
 				return;
 			} else if (dependencyNode.mark(DependencyNode.MARK.temp)) {
 				// TODO : change to a more explicit exception
-				throw new IllegalArgumentException("There is at least on cirlce in dependency");
+				throw new IllegalArgumentException(
+						"There is at least on cirlce in dependency");
 			} else {
 				dependencyNode.mark(DependencyNode.MARK.temp);
 				visitDAGNode(dependencyNode.parent);
+
 				dependencyNode.mark(DependencyNode.MARK.marked);
-				
+
 				dependentsOrder.add(0, dependencyNode);
 			}
 		}
 	}
 
 	private static class DependencyNode extends InstructionNode {
-		
+
 		public enum MARK {
-			unmark,
-			temp,
-			marked
+			unmark, temp, marked
 		}
-		
+
 		public enum STATE {
-			ready,
-			blocking,
-			terminated
+			ready, blocking, terminated
 		}
 
 		private DependencyNode parent;
 		private List<DependencyNode> children;
-		
+
 		private List<Instruction<?, ?>> pool;
 		private AtomicInteger issuedNum = new AtomicInteger(0);
 		private volatile STATE state = STATE.ready;
-		
+
 		private MARK mark;
-		
+
 		public DependencyNode(String[] requireDataNames,
 				Class<?>[] requireDataTypes, String produceDataName,
 				Class<?> produceDataType,
 				Class<? extends Instruction<?, ?>> instructionClass) {
 			super(requireDataNames, requireDataTypes, produceDataName,
 					produceDataType, instructionClass);
-			
-			pool = new ArrayList<Instruction<?,?>>();
+
+			pool = new ArrayList<Instruction<?, ?>>();
 		}
 
 		public DependencyNode getParent() {
@@ -255,13 +271,13 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		public void addChild(DependencyNode child) {
 			children.add(child);
 		}
-		
+
 		public void clear() {
 			mark = MARK.unmark;
 			parent = null;
 			children = new ArrayList<DAGInstructionResolver.DependencyNode>();
 		}
-		
+
 		public boolean mark(MARK mark) {
 			if (this.mark == mark) {
 				return true;
@@ -270,19 +286,19 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 			return false;
 		}
 
-		
 		// TODO: Two singleton checking is here, because we want to prevent the
 		// race condition. we can think of better way to write this later
 		@Override
-		public Instruction<?, ?> getInstructionInstance(ToolResolver toolResolver) {
-			
+		public Instruction<?, ?> getInstructionInstance(
+				ToolResolver toolResolver) {
+
 			if (issuedNum.get() > 0 && supportSingleton) {
 				return null;
 			}
-			
+
 			issuedNum.incrementAndGet();
 			Instruction<?, ?> instruction = null;
-			
+
 			if (pool.size() <= 0) {
 				instruction = super.getInstructionInstance(toolResolver);
 			} else {
@@ -290,22 +306,22 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 					instruction = pool.remove(pool.size());
 				}
 			}
-			
+
 			if (issuedNum.get() > 0 && supportSingleton) {
 				state = STATE.blocking;
 			}
-			
+
 			return instruction;
 		}
-		
+
 		public void returnInstructionInstance(Instruction<?, ?> instruction) {
-			
+
 			synchronized (pool) {
 				pool.add(instruction);
 			}
-			
+
 			issuedNum.decrementAndGet();
 		}
-		
+
 	}
 }

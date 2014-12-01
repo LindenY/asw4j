@@ -1,7 +1,10 @@
 package ca.uwaterloo.asw;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ca.uwaterloo.asw.reflection.TypeToken;
 
@@ -31,12 +34,23 @@ public class DataNode {
 	}
 
 	public <T> T get(Class<? extends T> clazz, String name) {
-		TypeToken<?> typeToken = TypeToken.get(clazz, name);
+		return get(TypeToken.get(clazz, name));
+	}
+	
+	public <T> T get(TypeToken<T> typeToken) {
 		Object obj = dataMap.get(typeToken);
 		if (obj == null) {
 			return null;
 		}
 		return (T) obj;
+	}
+	
+	public Set<TypeToken<?>> getTypeSet() {
+		return dataMap.keySet();
+	}
+	
+	public Collection<Object> getValues() {
+		return dataMap.values();
 	}
 
 }

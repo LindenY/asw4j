@@ -20,8 +20,12 @@ public class TestInstruction0 extends Instruction<Date, String> {
 
 	@Override
 	public String execute(Date requiredData) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		System.out.println("Execute");
+		
+		System.out.println("If requireData is null:" + (requiredData == null));
+		
+		return requiredData.toString();
 	}
 
 	@Override

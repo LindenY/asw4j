@@ -1,6 +1,9 @@
 package ca.uwaterloo.asw;
 
+import java.util.Iterator;
+
 import ca.uwaterloo.asw.DataNode;
+import ca.uwaterloo.asw.reflection.TypeToken;
 
 public abstract  class Instruction<R, P> implements Runnable {
 	
@@ -37,11 +40,8 @@ public abstract  class Instruction<R, P> implements Runnable {
 	
 	@SuppressWarnings("unchecked")
 	public void setRequireData(DataNode requireData) {
-		if (requireData.getClass() == DataNode.class) {
-			this.requireData = (R) requireData;
-			return;
-		}
-		this.requireData = (R) requireData.get(requireData.getClass());
+		
+		
 	}
 	
 	public Long getDuration() {
