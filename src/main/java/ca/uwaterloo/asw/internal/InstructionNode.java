@@ -258,8 +258,10 @@ public class InstructionNode {
 
 		if (types == null || types.length == 0) {
 			throw new IllegalArgumentException();
-		} else if (types.length == 1 && names.length > 1) {
-			throw new IllegalArgumentException();
+		} else if (names == null) {
+			if (types.length != 1) {
+				throw new IllegalArgumentException();
+			}
 		} else if (names.length != types.length) {
 			throw new IllegalArgumentException();
 		}
