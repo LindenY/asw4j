@@ -20,13 +20,13 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		dependencyNodes = new ArrayList<DAGInstructionResolver.DependencyNode>();
 	}
 
-	public void register(String[] requiredDataNames,
-			Class<?>[] requiredDataTypes, String producedDataName,
-			Class<?> producedDataType,
+	public void register(String[] requireDataNames,
+			Class<?>[] requireDataTypes, String produceDataName,
+			Class<?> produceDataType,
 			Class<? extends Instruction<?, ?>> instructionClass) {
 
-		DependencyNode newDN = new DependencyNode(requiredDataNames,
-				requiredDataTypes, producedDataName, producedDataType,
+		DependencyNode newDN = new DependencyNode(requireDataNames,
+				requireDataTypes, produceDataName, produceDataType,
 				instructionClass);
 		dependencyNodes.add(newDN);
 
@@ -37,21 +37,21 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		dependencyTree.solveDependencyTree();
 	}
 
-	public void register(Class<?>[] requiredDataTypes,
-			Class<?> producedDataType,
+	public void register(Class<?>[] requireDataTypes,
+			Class<?> produceDataType,
 			Class<? extends Instruction<?, ?>> instructionClass) {
 	}
 
-	public void register(String[] requiredDataNames, String producedDataName,
+	public void register(String[] requireDataNames, String produceDataName,
 			Class<? extends Instruction<?, ?>> instructionClass) {
 	}
 
-	public void register(String[] requiredDataNames,
+	public void register(String[] requireDataNames,
 			Class<? extends Instruction<?, ?>> instructionClass) {
 
 	}
 
-	public void register(String producedDataName,
+	public void register(String produceDataName,
 			Class<? extends Instruction<?, ?>> instructionClass) {
 	}
 
@@ -89,7 +89,7 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 				if (dataStore.contain(nextDN.getRequireDatas())) {
 					
 					Instruction<?, ?> instruction = nextDN.getInstructionInstance(toolResolver);
-					instruction.setRequiredData(dataStore.getAndRemoveAll(nextDN.getRequireDatas()));
+					instruction.setRequireData(dataStore.getAndRemoveAll(nextDN.getRequireDatas()));
 					return instruction;
 					
 				} else {
@@ -230,12 +230,12 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		
 		private MARK mark;
 		
-		public DependencyNode(String[] requiredDataNames,
-				Class<?>[] requiredDataTypes, String producedDataName,
-				Class<?> producedDataType,
+		public DependencyNode(String[] requireDataNames,
+				Class<?>[] requireDataTypes, String produceDataName,
+				Class<?> produceDataType,
 				Class<? extends Instruction<?, ?>> instructionClass) {
-			super(requiredDataNames, requiredDataTypes, producedDataName,
-					producedDataType, instructionClass);
+			super(requireDataNames, requireDataTypes, produceDataName,
+					produceDataType, instructionClass);
 			
 			pool = new ArrayList<Instruction<?,?>>();
 		}

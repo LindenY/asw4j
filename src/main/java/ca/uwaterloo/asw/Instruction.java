@@ -17,7 +17,7 @@ public abstract  class Instruction<R, P> implements Runnable {
 		Long st = System.currentTimeMillis();
 		
 		preExecution();
-		setResult(execute(requiredData));
+		setResult(execute(requireData));
 		postExecution();
 		
 		setDuration(System.currentTimeMillis() - st);
@@ -25,7 +25,7 @@ public abstract  class Instruction<R, P> implements Runnable {
 	
 	protected Long duration;
 	protected P result;
-	protected R requiredData;
+	protected R requireData;
 	
 	private void setDuration(Long duration) {
 		this.duration = duration;
@@ -36,12 +36,12 @@ public abstract  class Instruction<R, P> implements Runnable {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void setRequiredData(DataNode requiredData) {
-		if (requiredData.getClass() == DataNode.class) {
-			this.requiredData = (R) requiredData;
+	public void setRequireData(DataNode requireData) {
+		if (requireData.getClass() == DataNode.class) {
+			this.requireData = (R) requireData;
 			return;
 		}
-		this.requiredData = (R) requiredData.get(requiredData.getClass());
+		this.requireData = (R) requireData.get(requireData.getClass());
 	}
 	
 	public Long getDuration() {

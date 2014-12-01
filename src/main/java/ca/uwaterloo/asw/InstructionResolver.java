@@ -2,22 +2,22 @@ package ca.uwaterloo.asw;
 
 public interface InstructionResolver {
 
-	public void register(String[] requiredDataNames,
-			Class<?>[] requiredDataTypes, String producedDataName,
-			Class<?> producedDataType,
+	public void register(String[] requireDataNames,
+			Class<?>[] requireDataTypes, String produceDataName,
+			Class<?> produceDataType,
 			Class<? extends Instruction<?, ?>> instructionClass);
 
-	public void register(Class<?>[] requiredDataTypes,
-			Class<?> producedDataType,
+	public void register(Class<?>[] requireDataTypes,
+			Class<?> produceDataType,
 			Class<? extends Instruction<?, ?>> instructionClass);
 
-	public void register(String[] requiredDataNames, String producedDataName,
+	public void register(String[] requireDataNames, String produceDataName,
 			Class<? extends Instruction<?, ?>> instructionClass);
 
-	public void register(String[] requiredDataNames,
+	public void register(String[] requireDataNames,
 			Class<? extends Instruction<?, ?>> instructionClass);
 
-	public void register(String producedDataName,
+	public void register(String produceDataName,
 			Class<? extends Instruction<?, ?>> instructionClass);
 
 	public void register(Class<? extends Instruction<?, ?>> instructionClass);
