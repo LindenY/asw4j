@@ -1,5 +1,7 @@
 package ca.uwaterloo.asw;
 
+import ca.uwaterloo.asw.internal.InstructionNode;
+
 public abstract class WorkerManager<T> {
 
 	protected int coreNumWorkers;
@@ -63,9 +65,17 @@ public abstract class WorkerManager<T> {
 		this.instructionResolver = instructionResolver;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public void addInstructionProduceDataToDataStore(
+			Instruction<?, ?> instruction) {
+		String produceDataName = InstructionNode
+				.getInstructionProduceDataName((Class<? extends Instruction<?, ?>>) instruction
+						.getClass());
+		dataStore.add(instruction.getResult(), produceDataName);
+	}
+	
 	abstract public T start();
 	abstract public void shutDown();
 	abstract public void shutDownNow();
 	abstract public void awaitShutDown(int timeOut) throws InterruptedException;
-	
 }
