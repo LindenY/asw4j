@@ -23,13 +23,13 @@ public class InstructionNode {
 	protected List<Class<? extends Instruction<?, ?>>> dependencies;
 	protected List<TypeToken<?>> requireDatas;
 	protected TypeToken<?> produceData;
-	
+
 	protected final boolean supportAsync;
 	protected final boolean supportSingleton;
 
-	public InstructionNode(String[] requiredDataNames,
-			Class<?>[] requiredDataTypes, String producedDataName,
-			Class<?> producedDataType,
+	public InstructionNode(String[] requireDataNames,
+			Class<?>[] requireDataTypes, String produceDataName,
+			Class<?> produceDataType,
 			Class<? extends Instruction<?, ?>> instructionClass) {
 
 		this.instructionClass = instructionClass;
@@ -41,14 +41,15 @@ public class InstructionNode {
 		supportSingleton = getInstructionSingletonSupport(instructionClass);
 
 		requireDatas = new ArrayList<TypeToken<?>>();
-		for (int i = 0; i < requiredDataNames.length; i++) {
-			String name = requiredDataNames[i];
-			Type type = requiredDataTypes.length <= i ? null
-					: requiredDataTypes[i];
+		for (int i = 0; i < requireDataTypes.length; i++) {
+			Type type = requireDataTypes[i];
+			String name = (requireDataNames == null || requireDataNames.length <= i) 
+					? null
+					: requireDataNames[i];
 			requireDatas.add(TypeToken.get(type, name));
 		}
 
-		produceData = TypeToken.get(producedDataType, producedDataName);
+		produceData = TypeToken.get(produceDataType, produceDataName);
 	}
 
 	public List<Class<? extends Instruction<?, ?>>> getDependencies() {
@@ -80,7 +81,8 @@ public class InstructionNode {
 		try {
 			Constructor<? extends Instruction<?, ?>> constructor = instructionClass
 					.getDeclaredConstructor(ToolResolver.class);
-			Instruction<?, ?> instruction = constructor.newInstance(toolResolver);
+			Instruction<?, ?> instruction = constructor
+					.newInstance(toolResolver);
 			return instruction;
 		} catch (InstantiationException e) {
 			e.printStackTrace();
@@ -95,7 +97,7 @@ public class InstructionNode {
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
 
@@ -144,63 +146,6 @@ public class InstructionNode {
 		return false;
 	}
 
-	/*
-	 * public static List<TypeToken<?>> getInstructionRequireDatas( Class<?
-	 * extends Instruction<?, ?>> instructionClass) {
-	 * 
-	 * Type[] parameteriedTypes = TypeUtility
-	 * .getSuperclassTypeParameter(instructionClass); Type parameteriedType =
-	 * parameteriedTypes == null ? null : parameteriedTypes[0];
-	 * 
-	 * List<TypeToken<?>> requireDatas = new ArrayList<TypeToken<?>>();
-	 * RequireData requireDataAnnotation = instructionClass
-	 * .getAnnotation(RequireData.class); if (requireDataAnnotation != null) {
-	 * String[] requireNames = requireDataAnnotation.names(); Class<?>[]
-	 * requireTypes = requireDataAnnotation.types();
-	 * 
-	 * if (requireNames == null && requireTypes == null) {
-	 * requireDatas.add(TypeToken.get(parameteriedType)); } else if
-	 * (requireNames != null && requireTypes == null) { if (requireNames.length
-	 * == 1) { requireDatas.add(TypeToken.get(parameteriedType,
-	 * requireNames[0])); } else { throw new IllegalArgumentException(); } }
-	 * else if (requireNames == null && requireTypes != null) { if
-	 * (requireTypes.length <= 1) {
-	 * requireDatas.add(TypeToken.get(parameteriedType)); } else { if
-	 * (parameteriedType == DataNode.class) { requireDatas = new
-	 * ArrayList<TypeToken<?>>(); for (int i = 0; i < requireTypes.length; i++)
-	 * { requireDatas.add(TypeToken.get(requireTypes[i])); } } else { throw new
-	 * IllegalArgumentException(); } } } else { if (requireNames.length == 1) {
-	 * requireDatas.add(TypeToken.get(parameteriedType, requireNames[0])); }
-	 * else {
-	 * 
-	 * if (requireNames.length != requireTypes.length || parameteriedType !=
-	 * DataNode.class) { throw new IllegalArgumentException(); }
-	 * 
-	 * for (int i = 0; i < requireNames.length; i++) {
-	 * requireDatas.add(TypeToken.get(requireTypes[i], requireNames[i])); } } }
-	 * } else { requireDatas.add(TypeToken.get(parameteriedType)); }
-	 * 
-	 * return requireDatas; }
-	 * 
-	 * public static TypeToken<?> getInstructionProduceData( Class<? extends
-	 * Instruction<?, ?>> instructionClass) {
-	 * 
-	 * TypeToken<?> produceData = null;
-	 * 
-	 * Type[] parameteriedTypes = TypeUtility
-	 * .getSuperclassTypeParameter(instructionClass); Type parameteriedType =
-	 * parameteriedTypes == null ? null : parameteriedTypes[1]; ProduceData
-	 * produceDataAnnotation = instructionClass
-	 * .getAnnotation(ProduceData.class); if (produceDataAnnotation != null) {
-	 * if (produceDataAnnotation.name() != null &&
-	 * produceDataAnnotation.name().length() > 0) { produceData = TypeToken.get(
-	 * parameteriedType == null ? produceDataAnnotation.type() :
-	 * parameteriedType, produceDataAnnotation .name()); } } else { produceData
-	 * = TypeToken.get(parameteriedType); }
-	 * 
-	 * return produceData; }
-	 */
-
 	public static final String[] getInstructionRequireDataNames(
 			Class<? extends Instruction<?, ?>> instructionClass) {
 
@@ -228,7 +173,8 @@ public class InstructionNode {
 			return requireDataAnnotation.types();
 		}
 
-		return null;
+		return new Class<?>[] { (Class<?>) getInstructionActualParameterizedArgumentAtIndex(
+				instructionClass, 0) };
 	}
 
 	public static final String getInstructionProduceDataName(
@@ -244,12 +190,13 @@ public class InstructionNode {
 
 	public static final Class<?> getInstructionProduceDataType(
 			Class<? extends Instruction<?, ?>> instructionClass) {
-		
-		Type type = getInstructionActualParameterizedArgumentAtIndex(instructionClass, 1);
+
+		Type type = getInstructionActualParameterizedArgumentAtIndex(
+				instructionClass, 1);
 		if (type != null) {
 			return (Class<?>) type;
 		}
-		
+
 		ProduceData produceDataAnnotation = instructionClass
 				.getAnnotation(ProduceData.class);
 		if (produceDataAnnotation != null) {
