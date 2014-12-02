@@ -99,18 +99,6 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 				} else {
 					
 					if (nextDN.issuedNum.get() <= 0) {
-						/*boolean readyToTerminate = true;
-						for (DependencyNode cdn : nextDN.children) {
-							if (cdn.state != DependencyNode.STATE.terminated) {
-								readyToTerminate = false;
-								break;
-							}
-						}
-
-						if (readyToTerminate) {
-							nextDN.setState(DependencyNode.STATE.terminated);
-						}*/
-						
 						nextDN.setState(DependencyNode.STATE.terminated);
 					}
 				}
@@ -326,14 +314,14 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		
 		public void setState(STATE state) {
 			
+			this.state = state;
+			
 			if (parent != null && !parent.isSupportAsync()) {
 				if (state != STATE.terminated) {
-					
-					System.out.println("SetParent to blocking");
-					
 					parent.setState(STATE.blocking);
 				} else {
 					boolean isReady = true;
+					
 					for (DependencyNode child : parent.children) {
 						if (child.state != STATE.terminated) {
 							isReady = false;
@@ -344,8 +332,6 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 					}
 				}
 			}
-			
-			this.state = state;
 		}
 
 	}
