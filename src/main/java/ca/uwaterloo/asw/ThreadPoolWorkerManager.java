@@ -8,8 +8,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.uwaterloo.asw.internal.InstructionNode;
-
 public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 
 	private static final Logger LOG = LoggerFactory
