@@ -2,14 +2,15 @@ package ca.uwaterloo.asw.smokeTest;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.uwaterloo.asw.Instruction;
 import ca.uwaterloo.asw.internal.InstructionNode;
-import ca.uwaterloo.asw.reflection.TypeToken;
 import ca.uwaterloo.asw.testObjects.TestInstruction0;
 import ca.uwaterloo.asw.testObjects.TestInstruction1;
 import ca.uwaterloo.asw.testObjects.TestInstruction2;
@@ -44,15 +45,16 @@ public class InstructionNodeTest {
 	@Test
 	public void testRequireDataTypes() {
 		
-		Class<?>[] produceDataTypes = InstructionNode.getInstructionRequireDataTypes(TestInstruction2.class);
+		Type[] requireDataTypes = InstructionNode.getInstructionRequireDataTypes(TestInstruction2.class);
 		
-		assertFalse(produceDataTypes == null);
-		assertTrue(produceDataTypes.length == 3);
-		assertTrue(produceDataTypes[0] == String.class);
-		assertTrue(produceDataTypes[1] == Long.class);
-		assertTrue(produceDataTypes[2] == Date.class);
+		assertFalse(requireDataTypes == null);
+		assertTrue(requireDataTypes.length == 3);
+		assertTrue(requireDataTypes[0] == String.class);
+		assertTrue(requireDataTypes[1] == Long.class);
+		assertTrue(requireDataTypes[2] == Date.class);
 	}
 
+	@Ignore
 	@Test
 	public void testProduceDataName() {
 		
@@ -60,10 +62,11 @@ public class InstructionNodeTest {
 
 	}
 	
+	@Ignore
 	@Test
 	public void testProduceDataType() {
 		
-		Class<?> produceDataType = InstructionNode.getInstructionProduceDataType(TestInstruction2.class);
+		Type produceDataType = InstructionNode.getInstructionProduceDataType(TestInstruction2.class);
 		
 	}
 
