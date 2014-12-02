@@ -5,10 +5,8 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import ca.uwaterloo.asw.reflection.TypeToken;
 
@@ -38,9 +36,13 @@ public class ConcurrentMapDataStore implements DataStore {
 		}
 	}
 
-	public void addAll(List<Object> objs) {
+	public void addAll(List<?> objs) {
+		addAll(objs, null);
+	}
+	
+	public void addAll(List<?> objs, String name) {
 		for (Object obj : objs) {
-			add(obj);
+			add(obj, name);
 		}
 	}
 
@@ -146,6 +148,19 @@ public class ConcurrentMapDataStore implements DataStore {
 		}
 
 		return dataNode;
+	}
+
+	public <T> List<T> getAllValues(Class<T> type) {
+		return getAllValues(type, null);
+	}
+
+	public <T> List<T> getAllValues(Class<T> type, String name) {
+		return getAllValues(TypeToken.get(type, name));
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> List<T> getAllValues(TypeToken<T> typeToken) {
+		return (List<T>) concurrentMap.get(typeToken);
 	}
 
 }
