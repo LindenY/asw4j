@@ -44,7 +44,12 @@ public class DataNode {
 	}
 	
 	public <T> T get(TypeToken<T> typeToken) {
-		return (T) getAll(typeToken).get(0);
+		
+		List<T> objs = getAll(typeToken);
+		if (objs == null) {
+			return null;
+		}
+		return objs.get(0);
 	}
 	
 	public <T> List<T> getAll(Class<T> clazz) {
@@ -57,6 +62,10 @@ public class DataNode {
 	
 	@SuppressWarnings("unchecked")
 	public <T> List<T> getAll(TypeToken<T> typeToken) {
+		
+		if (typeToken == null) {
+			return null;
+		}
 		
 		List<T> objs = (List<T>) dataMap.get(typeToken);
 		if (objs == null || objs.size() <= 0) {
