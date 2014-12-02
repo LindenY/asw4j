@@ -27,6 +27,11 @@ public abstract class AbstractInstructionResolver implements
 	public void setToolResolver(ToolResolver toolResolver) {
 		this.toolResolver = toolResolver;
 	}
-	
-	
+
+	public void beforInstructionExecution(Instruction<?, ?> instruction) {
+	}
+
+	public void afterInstructionExecution(Instruction<?, ?> instruction) {
+	}
 }
+
