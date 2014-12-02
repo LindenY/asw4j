@@ -7,7 +7,7 @@ public interface InstructionResolver {
 			Class<?> produceDataType,
 			Class<? extends Instruction<?, ?>> instructionClass);
 
-	public void register(Class<?>[] requireDataTypes,
+	/*public void register(Class<?>[] requireDataTypes,
 			Class<?> produceDataType,
 			Class<? extends Instruction<?, ?>> instructionClass);
 
@@ -18,7 +18,7 @@ public interface InstructionResolver {
 			Class<? extends Instruction<?, ?>> instructionClass);
 
 	public void register(String produceDataName,
-			Class<? extends Instruction<?, ?>> instructionClass);
+			Class<? extends Instruction<?, ?>> instructionClass);*/
 
 	public void register(Class<? extends Instruction<?, ?>> instructionClass);
 
