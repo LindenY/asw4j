@@ -79,12 +79,8 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		Iterator<DependencyNode> iterator = dependencyTree.dependentsOrder
 				.iterator();
 		
-		System.out.println();
-		
 		while (iterator.hasNext()) {
 			DependencyNode nextDN = iterator.next();
-			
-			System.out.println(nextDN.getInstruction().getName() + " : " + nextDN.state);
 			
 			if (nextDN.state == DependencyNode.STATE.blocking
 					|| nextDN.state == DependencyNode.STATE.terminated) {
@@ -330,19 +326,11 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		
 		public void setState(STATE state) {
 			
-			System.out.println();
-			System.out.println("----------------Start setState-----------------");
-			
-			System.out.println(getInstruction().getName());
-			System.out.println("Parent: " + parent.getInstruction().getName());
-			System.out.println("Original State: " + this.state);
-			System.out.println("To State: " + state);
-			
-			System.out.println("----------------End setState-------------------");
-			System.out.println();
-			
 			if (parent != null && !parent.isSupportAsync()) {
 				if (state != STATE.terminated) {
+					
+					System.out.println("SetParent to blocking");
+					
 					parent.setState(STATE.blocking);
 				} else {
 					boolean isReady = true;

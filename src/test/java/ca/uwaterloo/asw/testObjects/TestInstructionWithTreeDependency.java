@@ -45,7 +45,7 @@ public class TestInstructionWithTreeDependency {
 	
 	@RequireData(names={"LeafA", "LeafB"}, types={String.class, String.class})
 	@ProduceData(name="LevelA")
-	@DependOn(instructions={TreeLeafInstructionA.class, TreeLeafInstructionB.class}, async=true)
+	@DependOn(instructions={TreeLeafInstructionA.class, TreeLeafInstructionB.class}, async=false)
 	public static class TreeLevelInstructionA extends Instruction<DataNode, String> {
 
 		public TreeLevelInstructionA(ToolResolver toolResolver) {

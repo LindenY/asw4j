@@ -302,10 +302,6 @@ public class DAGInstructionResolverTest {
 		Instruction<?,?> leafInstruction1 = instructionResolver.resolveInstruction();
 		Instruction<?,?> levelInstruction0 = instructionResolver.resolveInstruction();
 		
-		System.out.println(leafInstruction0.getClass().getName());
-		System.out.println(leafInstruction1.getClass().getName());
-		System.out.println(levelInstruction0.getClass().getName());
-		
 		assertFalse(leafInstruction0 == null);
 		assertFalse(leafInstruction1 == null);
 		assertTrue(levelInstruction0 == null);
