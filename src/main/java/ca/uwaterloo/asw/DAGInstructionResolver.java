@@ -1,5 +1,6 @@
 package ca.uwaterloo.asw;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,20 +21,20 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		dependencyNodes = new ArrayList<DAGInstructionResolver.DependencyNode>();
 	}
 
-	public void register(String[] requireDataNames,
-			Class<?>[] requireDataTypes, String produceDataName,
-			Class<?> produceDataType,
+	public void register(
+			String[] requireDataNames, 
+			Type[] requireDataTypes,
+			String produceDataName,
 			Class<? extends Instruction<?, ?>> instructionClass) {
-		
+
 		DependencyNode newDN = new DependencyNode(requireDataNames,
-				requireDataTypes, produceDataName, produceDataType,
-				instructionClass);
+				requireDataTypes, produceDataName, instructionClass);
 
 		for (Class<? extends Instruction<?, ?>> ins : newDN.getDependencies()) {
 			register(ins);
 		}
 		dependencyNodes.add(newDN);
-		
+
 		dependencyTree.solveDependencyTree();
 	}
 
@@ -41,15 +42,13 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 
 		String[] requireDataNames = InstructionNode
 				.getInstructionRequireDataNames(instructionClass);
-		Class<?>[] requireDataTypes = InstructionNode
+		Type[] requireDataTypes = InstructionNode
 				.getInstructionRequireDataTypes(instructionClass);
 		String produceDataName = InstructionNode
 				.getInstructionProduceDataName(instructionClass);
-		Class<?> produceDataType = InstructionNode
-				.getInstructionProduceDataType(instructionClass);
 
 		register(requireDataNames, requireDataTypes, produceDataName,
-				produceDataType, instructionClass);
+				instructionClass);
 	}
 
 	public int numberOfRegisteredInstruction() {
@@ -60,10 +59,10 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 
 		Iterator<DependencyNode> iterator = dependencyTree.dependentsOrder
 				.iterator();
-		
+
 		while (iterator.hasNext()) {
 			DependencyNode nextDN = iterator.next();
-			
+
 			if (nextDN.state == DependencyNode.STATE.blocking
 					|| nextDN.state == DependencyNode.STATE.terminated) {
 				continue;
@@ -79,7 +78,7 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 					return instruction;
 
 				} else {
-					
+
 					if (nextDN.issuedNum.get() <= 0) {
 						nextDN.setState(DependencyNode.STATE.terminated);
 					}
@@ -111,9 +110,8 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		// TypeToken
 		// object and make it partial support GenericType.
 		public void solveDependencyTree() {
-			
-			Map<Class<? extends Instruction<?, ?>>, DependencyNode> dependentMap = 
-					new HashMap<Class<? extends Instruction<?, ?>>, DAGInstructionResolver.DependencyNode>();
+
+			Map<Class<? extends Instruction<?, ?>>, DependencyNode> dependentMap = new HashMap<Class<? extends Instruction<?, ?>>, DAGInstructionResolver.DependencyNode>();
 			instructionClassMap = new HashMap<Class<? extends Instruction<?, ?>>, DAGInstructionResolver.DependencyNode>();
 
 			Iterator<DependencyNode> dnListIterator = dependencyNodes
@@ -209,11 +207,10 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		private MARK mark;
 
 		public DependencyNode(String[] requireDataNames,
-				Class<?>[] requireDataTypes, String produceDataName,
-				Class<?> produceDataType,
+				Type[] requireDataTypes, String produceDataName,
 				Class<? extends Instruction<?, ?>> instructionClass) {
 			super(requireDataNames, requireDataTypes, produceDataName,
-					produceDataType, instructionClass);
+					instructionClass);
 
 			pool = new ArrayList<Instruction<?, ?>>();
 		}
@@ -290,17 +287,17 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 				setState(STATE.ready);
 			}
 		}
-		
+
 		public void setState(STATE state) {
-			
+
 			this.state = state;
-			
+
 			if (parent != null && !parent.isSupportAsync()) {
 				if (state != STATE.terminated) {
 					parent.setState(STATE.blocking);
 				} else {
 					boolean isReady = true;
-					
+
 					for (DependencyNode child : parent.children) {
 						if (child.state != STATE.terminated) {
 							isReady = false;
