@@ -2,6 +2,7 @@ package ca.uwaterloo.asw.testObjects;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import ca.uwaterloo.asw.DataNode;
 import ca.uwaterloo.asw.Instruction;
@@ -65,7 +66,50 @@ public class TestInstructionWithoutDependency {
 		public void postExecution() {
 		}
 	}
+
+	public static class InstructionWithoutParameterizedTypes extends Instruction {
+
+		public InstructionWithoutParameterizedTypes(ToolResolver toolResolver) {
+			super(toolResolver);
+		}
+
+		@Override
+		public void preExecution() {
+			
+		}
+
+		@Override
+		public Object execute(Object requireData) {
+			return null;
+		}
+
+		@Override
+		public void postExecution() {
+		}
+		
+	}
 	
+	public static class InstructionWithGenericType extends Instruction<List<String>, Map<String, Date>> {
+
+		public InstructionWithGenericType(ToolResolver toolResolver) {
+			super(toolResolver);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		public void preExecution() {
+		}
+
+		@Override
+		public Map<String, Date> execute(List<String> requireData) {
+			return null;
+		}
+
+		@Override
+		public void postExecution() {
+		}
+		
+	}
 	
 	@RequireData(types={Date.class, String.class}, names={"d"})
 	public static class InstructionWithIncorrectRequireType extends Instruction<String, String> {
@@ -90,4 +134,5 @@ public class TestInstructionWithoutDependency {
 		}
 		
 	}
+
 }
