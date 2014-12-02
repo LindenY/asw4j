@@ -1,24 +1,14 @@
 package ca.uwaterloo.asw;
 
+import java.lang.reflect.Type;
+
 public interface InstructionResolver {
 
-	public void register(String[] requireDataNames,
-			Class<?>[] requireDataTypes, String produceDataName,
-			Class<?> produceDataType,
+	public void register(
+			String[] requireDataNames,
+			Type[] requireDataTypes, 
+			String produceDataName,
 			Class<? extends Instruction<?, ?>> instructionClass);
-
-	/*public void register(Class<?>[] requireDataTypes,
-			Class<?> produceDataType,
-			Class<? extends Instruction<?, ?>> instructionClass);
-
-	public void register(String[] requireDataNames, String produceDataName,
-			Class<? extends Instruction<?, ?>> instructionClass);
-
-	public void register(String[] requireDataNames,
-			Class<? extends Instruction<?, ?>> instructionClass);
-
-	public void register(String produceDataName,
-			Class<? extends Instruction<?, ?>> instructionClass);*/
 
 	public void register(Class<? extends Instruction<?, ?>> instructionClass);
 
