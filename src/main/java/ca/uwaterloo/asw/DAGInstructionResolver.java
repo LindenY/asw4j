@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.uwaterloo.asw.internal.InstructionNode;
-import ca.uwaterloo.asw.reflection.TypeToken;
 
 public class DAGInstructionResolver extends AbstractInstructionResolver {
 
@@ -36,23 +35,6 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		dependencyNodes.add(newDN);
 		
 		dependencyTree.solveDependencyTree();
-	}
-
-	public void register(Class<?>[] requireDataTypes, Class<?> produceDataType,
-			Class<? extends Instruction<?, ?>> instructionClass) {
-	}
-
-	public void register(String[] requireDataNames, String produceDataName,
-			Class<? extends Instruction<?, ?>> instructionClass) {
-	}
-
-	public void register(String[] requireDataNames,
-			Class<? extends Instruction<?, ?>> instructionClass) {
-
-	}
-
-	public void register(String produceDataName,
-			Class<? extends Instruction<?, ?>> instructionClass) {
 	}
 
 	public void register(Class<? extends Instruction<?, ?>> instructionClass) {
@@ -109,10 +91,7 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		return null;
 	}
 
-	public void beforInstructionExecution(Instruction<?, ?> instruction) {
-
-	}
-
+	@Override
 	public void afterInstructionExecution(Instruction<?, ?> instruction) {
 		DependencyNode dn = dependencyTree.instructionClassMap.get(instruction
 				.getClass());
