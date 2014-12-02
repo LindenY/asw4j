@@ -80,7 +80,6 @@ public class DAGInstructionResolverTest {
 	}
 	
 	
-	@Ignore
 	@Test
 	public void testSingleInstruction() {
 		
@@ -117,7 +116,6 @@ public class DAGInstructionResolverTest {
 		assertFalse(instruction4.getResult() == null || instruction4.getResult().equals(""));
 	}
 
-	@Ignore
 	@Test
 	public void testSingleInstructionWithAnnotation() {
 		
@@ -160,7 +158,6 @@ public class DAGInstructionResolverTest {
 	}
 
 	
-	@Ignore
 	@Test
 	public void testMultipleInstructionWithoutDependency() {
 		
@@ -215,7 +212,6 @@ public class DAGInstructionResolverTest {
 	}
 	
 	
-	@Ignore
 	@Test 
 	public void testMultipleInstructionWithTreeDependency() {
 		
@@ -259,7 +255,6 @@ public class DAGInstructionResolverTest {
 	}
 
 	
-	@Ignore
 	@Test
 	public void testMultipleInstructionWithSingleton() {
 		
@@ -305,5 +300,13 @@ public class DAGInstructionResolverTest {
 		assertFalse(leafInstruction0 == null);
 		assertFalse(leafInstruction1 == null);
 		assertTrue(levelInstruction0 == null);
+		
+		instructionResolver.afterInstructionExecution(leafInstruction0);
+		instructionResolver.afterInstructionExecution(leafInstruction1);
+		
+		levelInstruction0 = instructionResolver.resolveInstruction();
+		
+		assertFalse(levelInstruction0 == null);
+		levelInstruction0.run();
 	}
 }
