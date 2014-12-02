@@ -42,13 +42,12 @@ public class InstructionNode {
 
 		requireDatas = new ArrayList<TypeToken<?>>();
 		
-		RequireData requireDataAnnotation = instructionClass
-				.getAnnotation(RequireData.class);
-		
-		checkPreconditionOfRequireDatas(requireDataAnnotation, instructionClass);
+		checkPreconditionOfRequireDatas(requireDataNames, requireDataTypes);
 		for (int i = 0; i < requireDataTypes.length; i++) {
 			Type type = requireDataTypes[i];
-			String name = requireDataNames[i];
+			String name = requireDataNames == null 
+					? null
+					: requireDataNames[i];
 			requireDatas.add(TypeToken.get(type, name));
 		}
 
@@ -249,16 +248,11 @@ public class InstructionNode {
 		}
 	}
 	
-	private static final void checkPreconditionOfRequireDatas (
-			RequireData requireDataAnnotation,
-			Class<? extends Instruction<?, ?>> instructionClass) {
-
-		String[] names = requireDataAnnotation.names();
-		Class<?>[] types = requireDataAnnotation.types();
+	private static final void checkPreconditionOfRequireDatas (String[] names, Class<?>[] types) {
 
 		if (types == null || types.length == 0) {
 			throw new IllegalArgumentException();
-		} else if (names == null) {
+		} else if (names == null || names.length == 0) {
 			if (types.length != 1) {
 				throw new IllegalArgumentException();
 			}
