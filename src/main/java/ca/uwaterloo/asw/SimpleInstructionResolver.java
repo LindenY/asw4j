@@ -1,5 +1,6 @@
 package ca.uwaterloo.asw;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,29 +31,31 @@ public class SimpleInstructionResolver extends AbstractInstructionResolver {
 		return enableCache;
 	}
 
-	public void register(String[] requireDataNames,
-			Class<?>[] requireDataTypes, String produceDataName,
-			Class<?> produceDataType,
+	public void register(
+			String[] requireDataNames,
+			Type[] requireDataTypes, 
+			String produceDataName,
 			Class<? extends Instruction<?, ?>> instructionClass) {
 
-		instructionNodeMap.put(instructionClass, new SimpleInstructionNode(
-				requireDataNames, requireDataTypes, produceDataName,
-				produceDataType, instructionClass, enableCache));
+		instructionNodeMap.put(instructionClass, 
+				new SimpleInstructionNode(
+						requireDataNames, 
+						requireDataTypes, 
+						produceDataName, 
+						instructionClass, 
+						enableCache));
 	}
 
 	public void register(Class<? extends Instruction<?, ?>> instructionClass) {
 
 		String[] requireDataNames = InstructionNode
 				.getInstructionRequireDataNames(instructionClass);
-		Class<?>[] requireDataTypes = InstructionNode
+		Type[] requireDataTypes = InstructionNode
 				.getInstructionRequireDataTypes(instructionClass);
 		String produceDataName = InstructionNode
 				.getInstructionProduceDataName(instructionClass);
-		Class<?> produceDataType = InstructionNode
-				.getInstructionProduceDataType(instructionClass);
 
-		register(requireDataNames, requireDataTypes, produceDataName,
-				produceDataType, instructionClass);
+		register(requireDataNames, requireDataTypes, produceDataName, instructionClass);
 	}
 
 	public int numberOfRegisteredInstruction() {
@@ -96,13 +99,11 @@ public class SimpleInstructionResolver extends AbstractInstructionResolver {
 		private AtomicInteger issuedNum;
 
 		public SimpleInstructionNode(String[] requireDataNames,
-				Class<?>[] requireDataTypes, String produceDataName,
-				Class<?> produceDataType,
+				Type[] requireDataTypes, String produceDataName,
 				Class<? extends Instruction<?, ?>> instructionClass,
 				boolean enableCache) {
 
-			super(requireDataNames, requireDataTypes, produceDataName,
-					produceDataType, instructionClass);
+			super(requireDataNames, requireDataTypes, produceDataName, instructionClass);
 
 			if (enableCache) {
 				pool = new ArrayList<Instruction<?, ?>>();
