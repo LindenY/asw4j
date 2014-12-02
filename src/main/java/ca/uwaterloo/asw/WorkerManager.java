@@ -68,6 +68,10 @@ public abstract class WorkerManager<T> {
 	@SuppressWarnings("unchecked")
 	public void addInstructionProduceDataToDataStore(
 			Instruction<?, ?> instruction) {
+		
+		if (instruction.getResult() == null) {
+			return;
+		}
 		String produceDataName = InstructionNode
 				.getInstructionProduceDataName((Class<? extends Instruction<?, ?>>) instruction
 						.getClass());
