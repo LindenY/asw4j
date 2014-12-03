@@ -5,7 +5,6 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import ca.uwaterloo.asw.reflection.TypeToken;
@@ -162,5 +161,15 @@ public class ConcurrentMapDataStore implements DataStore {
 	public <T> List<T> getAllValues(TypeToken<T> typeToken) {
 		return (List<T>) concurrentMap.get(typeToken);
 	}
+
+	public Map<TypeToken<?>, Object> getAllValues() {
+		Map<TypeToken<?>, Object> resultMap = new HashMap<TypeToken<?>, Object>();
+		for (TypeToken<?> tk : concurrentMap.keySet()) {
+			resultMap.put(tk, concurrentMap.get(tk));
+		}
+		return resultMap;
+	}
+	
+	
 
 }
