@@ -108,7 +108,7 @@ public class TypeUtility {
 			} else {
 				throw new IllegalArgumentException();
 			}
-			
+
 		} else if (type instanceof GenericArrayType) {
 			Type componentType = ((GenericArrayType) type)
 					.getGenericComponentType();
@@ -127,7 +127,7 @@ public class TypeUtility {
 							+ "> is of type " + className);
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public static Type[] getSuperclassTypeParameter(Class<?> subclass) {
 		Type superclass = subclass.getGenericSuperclass();
@@ -136,6 +136,55 @@ public class TypeUtility {
 		}
 		ParameterizedType parameterizedType = (ParameterizedType) superclass;
 		return parameterizedType.getActualTypeArguments();
+	}
+
+	public static Type resolveGenericType(Class<?> type, Type subType) {
+		Class<?> rawType;
+		if (subType instanceof ParameterizedType)
+			rawType = (Class<?>) ((ParameterizedType) subType).getRawType();
+		else
+			rawType = (Class<?>) subType;
+
+		if (type.equals(rawType))
+			return subType;
+
+		Type result;
+		if (type.isInterface()) {
+			for (Type superInterface : rawType.getGenericInterfaces())
+				if (superInterface != null
+						&& !superInterface.equals(Object.class))
+					if ((result = resolveGenericType(type, superInterface)) != null)
+						return result;
+		}
+
+		Type superClass = rawType.getGenericSuperclass();
+		if (superClass != null && !superClass.equals(Object.class))
+			if ((result = resolveGenericType(type, superClass)) != null)
+				return result;
+
+		return null;
+	}
+
+	public static Class<?> resolveRawClass(Type genericType, Class<?> subType) {
+		if (genericType instanceof Class) {
+			return (Class<?>) genericType;
+		} else if (genericType instanceof ParameterizedType) {
+			return resolveRawClass(
+					((ParameterizedType) genericType).getRawType(), subType);
+		} else if (genericType instanceof GenericArrayType) {
+			GenericArrayType arrayType = (GenericArrayType) genericType;
+			Class<?> compoment = resolveRawClass(
+					arrayType.getGenericComponentType(), subType);
+			return Array.newInstance(compoment, 0).getClass();
+		} else if (genericType instanceof TypeVariable) {
+			/*TypeVariable<?> variable = (TypeVariable<?>) genericType;
+			genericType = getTypeVariableMap(subType).get(variable);
+			genericType = genericType == null ? resolveBound(variable)
+					: resolveRawClass(genericType, subType);*/
+		}
+
+		return genericType instanceof Class ? (Class<?>) genericType
+				: null;
 	}
 
 	private static final class GenericArrayTypeImpl implements GenericArrayType {

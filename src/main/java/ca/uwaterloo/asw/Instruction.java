@@ -5,13 +5,13 @@ import ca.uwaterloo.asw.DataNode;
 
 public abstract  class Instruction<R, P> implements Runnable {
 	
-	public Instruction(ToolResolver toolResolver) {
-		
+	public Instruction() {
 	}
 	
-	public abstract void preExecution();
+	public Instruction(ToolResolver toolResolver) {
+	}
+	
 	public abstract P execute(R requireData);
-	public abstract void postExecution();
 
 	public final void run() {
 		
@@ -22,6 +22,12 @@ public abstract  class Instruction<R, P> implements Runnable {
 		postExecution();
 		
 		setDuration(System.currentTimeMillis() - st);
+	}
+	
+	public void preExecution() {
+	}
+
+	public void postExecution() {
 	}
 	
 	protected Long duration;
