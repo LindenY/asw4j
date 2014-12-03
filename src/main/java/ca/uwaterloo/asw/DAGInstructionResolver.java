@@ -59,7 +59,7 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 
 		Iterator<DependencyNode> iterator = dependencyTree.dependentsOrder
 				.iterator();
-
+		
 		while (iterator.hasNext()) {
 			DependencyNode nextDN = iterator.next();
 
@@ -79,7 +79,15 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 
 				} else {
 
-					if (nextDN.issuedNum.get() <= 0) {
+					boolean isReady = false;
+					for (DependencyNode dn : nextDN.children) {
+						if (dn.state != DependencyNode.STATE.terminated) {
+							isReady = true;
+							break;
+						}
+					}
+					
+					if (nextDN.issuedNum.get() <= 0  && !isReady) {
 						nextDN.setState(DependencyNode.STATE.terminated);
 					}
 				}
