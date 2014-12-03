@@ -98,14 +98,20 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 			
 			Instruction<?, ?> newInstruction = instructionResolver
 					.resolveInstruction();
-			if (newInstruction == null) {
+			
+			int resolvedCount = 0;
+			while (newInstruction != null) {
+				resolvedCount ++;
+				execute(newInstruction);
+				newInstruction = instructionResolver.resolveInstruction();
+			}
+			
+			if (resolvedCount == 0) {
 				if (getActiveCount() <= 1 && getQueue().size() <= 0) {
 					synchronized (workerManager) {
 						workerManager.notify();
 					}
 				}
-			} else {
-				execute(newInstruction);
 			}
 			super.afterExecute(r, t);
 		}
