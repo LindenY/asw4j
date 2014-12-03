@@ -70,4 +70,22 @@ public class InstructionNodeTest {
 		
 	}
 
+	@Test 
+	public void testInstructionInstantiation() {
+		
+		InstructionNode instructionNode = 
+				new InstructionNode(null, new Class<?>[]{String.class}, null, MyInstruction.class);
+		
+		Instruction<?, ?> rInstruction = instructionNode.getInstructionInstance(null);
+	}
+	
+	public static class MyInstruction extends Instruction<String, Date> {
+
+		@Override
+		public Date execute(String requireData) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+	}
 }
