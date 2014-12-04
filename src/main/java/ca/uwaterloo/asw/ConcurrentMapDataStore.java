@@ -1,10 +1,12 @@
 package ca.uwaterloo.asw;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import ca.uwaterloo.asw.reflection.TypeToken;
@@ -12,9 +14,11 @@ import ca.uwaterloo.asw.reflection.TypeToken;
 public class ConcurrentMapDataStore implements DataStore {
 
 	private ConcurrentHashMap<TypeToken<?>, List<Object>> concurrentMap;
+	private volatile int size;
 
 	public ConcurrentMapDataStore() {
 		concurrentMap = new ConcurrentHashMap<TypeToken<?>, List<Object>>();
+		size = 0;
 	}
 
 	public void add(Object obj) {
@@ -32,6 +36,7 @@ public class ConcurrentMapDataStore implements DataStore {
 
 		synchronized (objs) {
 			objs.add(obj);
+			size ++;
 		}
 	}
 
@@ -133,6 +138,7 @@ public class ConcurrentMapDataStore implements DataStore {
 		synchronized (objs) {
 			obj = objs.get(0);
 			objs.remove(0);
+			size --;
 		}
 
 		return (T) obj;
@@ -162,13 +168,30 @@ public class ConcurrentMapDataStore implements DataStore {
 		return (List<T>) concurrentMap.get(typeToken);
 	}
 
-	public Map<TypeToken<?>, Object> getAllValues() {
-		Map<TypeToken<?>, Object> resultMap = new HashMap<TypeToken<?>, Object>();
+	public Map<TypeToken<?>, List<Object>> getAllValues() {
+		Map<TypeToken<?>, List<Object>> resultMap = new HashMap<TypeToken<?>, List<Object>>();
 		for (TypeToken<?> tk : concurrentMap.keySet()) {
-			resultMap.put(tk, concurrentMap.get(tk));
+			List<Object> objs = concurrentMap.get(tk);
+			if (objs.size() > 0) {
+				resultMap.put(tk, objs);
+			}
 		}
 		return resultMap;
 	}
+
+	public Set<TypeToken<?>> keySet() {
+		return concurrentMap.keySet();
+	}
+
+	public Collection<List<Object>> values() {
+		return concurrentMap.values();
+	}
+
+	public int size() {
+		return size;
+	}
+	
+	
 	
 	
 

@@ -7,20 +7,17 @@ public abstract class WorkerManager<T> {
 	protected int coreNumWorkers;
 	protected int maxNumWorkers;
 	
-	protected ToolResolver toolResolver;
 	protected DataStore dataStore;
 	protected InstructionResolver instructionResolver;
 	
 	public WorkerManager(int coreNumWorkers,
 						 int maxNumWorkers,
-						 ToolResolver toolResolver,
 						 DataStore dataNodeStore,
 						 InstructionResolver instructionResolver) {
 		
 		this.coreNumWorkers = coreNumWorkers;
 		this.maxNumWorkers = maxNumWorkers;
 		
-		this.toolResolver = toolResolver;
 		this.dataStore = dataNodeStore;
 		this.instructionResolver = instructionResolver;
 	}
@@ -39,14 +36,6 @@ public abstract class WorkerManager<T> {
 
 	public void setMaxNumWorkers(int maxNumWorkers) {
 		this.maxNumWorkers = maxNumWorkers;
-	}
-
-	public ToolResolver getToolResolver() {
-		return toolResolver;
-	}
-
-	public void setToolResolver(ToolResolver toolResolver) {
-		this.toolResolver = toolResolver;
 	}
 
 	public DataStore getDataNodeStore() {

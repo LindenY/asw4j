@@ -1,7 +1,9 @@
 package ca.uwaterloo.asw;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ca.uwaterloo.asw.DataNode;
 import ca.uwaterloo.asw.reflection.TypeToken;
@@ -38,5 +40,12 @@ public interface DataStore {
 	
 	public <T> List<T> getAllValues(TypeToken<T> typeToken);
 	
-	public Map<TypeToken<?>, Object> getAllValues();
+	public Map<TypeToken<?>, List<Object>> getAllValues();
+	
+	public Set<TypeToken<?>> keySet();
+	
+	public Collection<List<Object>> values();
+	
+	public int size();
+	
 }
