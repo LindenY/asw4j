@@ -8,9 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.uwaterloo.asw.internal.InstructionNode;
 
 public class DAGInstructionResolver extends AbstractInstructionResolver {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(DAGInstructionResolver.class);
 
 	private List<DependencyNode> dependencyNodes;
 	private DependencyTree dependencyTree;
@@ -59,6 +64,7 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 
 		Iterator<DependencyNode> iterator = dependencyTree.dependentsOrder
 				.iterator();
+		Instruction<?, ?> instruction = null;
 		
 		while (iterator.hasNext()) {
 			DependencyNode nextDN = iterator.next();
@@ -71,11 +77,11 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 				if (dataStore.containAll(nextDN.getRequireDatas())) {
 
 					nextDN.setState(DependencyNode.STATE.running);
-					Instruction<?, ?> instruction = nextDN
+					instruction = nextDN
 							.getInstructionInstance(toolResolver);
 					instruction.setRequireData(dataStore.getAndRemoveAll(nextDN
 							.getRequireDatas()));
-					return instruction;
+					break;
 
 				} else {
 
@@ -91,11 +97,10 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 						nextDN.setState(DependencyNode.STATE.terminated);
 					}
 				}
-
 			}
 		}
 
-		return null;
+		return instruction;
 	}
 
 	@Override
