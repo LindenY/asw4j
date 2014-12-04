@@ -36,7 +36,7 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 		
 		super(coreNumWorkers, maxNumWorkers, dataStore, instructionResolver);
 
-		BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(maxNumWorkers);
+		BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(maxQueueNum);
 		
 		threadPool = new ThreadPool(
 				coreNumWorkers, 
@@ -67,13 +67,8 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 			
 			startTime = System.currentTimeMillis();
 		}
-
-		Instruction<?, ?> instruction = instructionResolver
-				.resolveInstruction();
-		while (instruction != null) {
-			threadPool.execute(instruction);
-			instruction = instructionResolver.resolveInstruction();
-		}
+		
+		addInstructionToExecutionQueue();
 
 		T executedResult = null;
 		if (threadPool.getActiveCount() > 0) {
@@ -90,14 +85,13 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 		}
 		
 		if (LOG.isDebugEnabled()) {
+			long t = allJobsTime.get();
 			LOG.debug(
 					String.format(
-							"WorkManager finishes with %d jobs complete " + 
-							"with duration of %d millis " +
-							"and all jobs time of %d millis.",
+							"WorkManager finishes with %d jobs complete with duration of %d millis and all jobs time of %d millis.",
 							threadPool.getCompletedTaskCount(),
 							System.currentTimeMillis() - startTime,
-							allJobsTime));
+							t));
 		}
 
 		return executedResult;
@@ -113,6 +107,37 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 
 	@Override
 	public void awaitShutDown(int timeOut) throws InterruptedException {
+	}
+	
+	private boolean addInstructionToExecutionQueue() {
+		
+		Instruction<?, ?> instruction = null;
+		int count = 0;
+		for (int i=0; i<threadPool.getQueue().remainingCapacity(); i++) {
+			instruction = instructionResolver.resolveInstruction();
+			if (instruction == null) {
+				break;
+			}
+			
+			threadPool.execute(instruction);
+			count ++;
+		}
+		
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(
+				String.format(
+					"%d active workers, %d instructions in queue, %d capacity remain, %d instructions added.",
+						threadPool.getActiveCount(),
+						threadPool.getQueue().size(),
+						threadPool.getQueue().remainingCapacity(),
+						count));
+		}
+		
+		
+		if (count == 0) {
+			return false;
+		}
+		return true;
 	}
 
 	private class ThreadPool extends ThreadPoolExecutor {
@@ -130,8 +155,8 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 		@Override
 		protected void beforeExecute(Thread t, Runnable r) {
 			
-			if (LOG.isDebugEnabled()) {
-				LOG.debug(
+			if (LOG.isTraceEnabled()) {
+				LOG.trace(
 					String.format(
 						"%s starts to run on thread %s",
 						r.getClass().getName(),
@@ -148,28 +173,21 @@ public class ThreadPoolWorkerManager<T> extends WorkerManager<T> {
 			
 			Instruction<?, ?> finishedInstruction = (Instruction<?, ?>) r;
 			
-			if (LOG.isDebugEnabled()) {
-				LOG.debug(
+			if (LOG.isTraceEnabled()) {
+				LOG.trace(
 					String.format("%s finished run with duration %d.", 
 							finishedInstruction.getClass().getName(),
 							finishedInstruction.getDuration()));
 			}
 
-			workerManager.allJobsTime.addAndGet(finishedInstruction.getDuration());
+			if (finishedInstruction.getDuration() != null && finishedInstruction.getDuration() >= 0) {
+				workerManager.allJobsTime.addAndGet(finishedInstruction.getDuration());
+			}
 			workerManager.addInstructionProduceDataToDataStore(finishedInstruction);
 			instructionResolver.afterInstructionExecution(finishedInstruction);
 			
-			Instruction<?, ?> newInstruction = instructionResolver
-					.resolveInstruction();
 			
-			int resolvedCount = 0;
-			while (newInstruction != null) {
-				resolvedCount ++;
-				execute(newInstruction);
-				newInstruction = instructionResolver.resolveInstruction();
-			}
-			
-			if (resolvedCount == 0) {
+			if (!addInstructionToExecutionQueue()) {
 				if (getActiveCount() <= 1 && getQueue().size() <= 0) {
 					synchronized (workerManager) {
 						workerManager.notify();
