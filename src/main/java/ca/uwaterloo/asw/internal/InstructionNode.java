@@ -83,7 +83,18 @@ public class InstructionNode {
 			Instruction<?, ?> instruction = constructor
 					.newInstance(toolResolver);
 			return instruction;
-		} catch (Exception e) {
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
 		}
 
 		try {
@@ -91,8 +102,19 @@ public class InstructionNode {
 					.getDeclaredConstructor();
 			Instruction<?, ?> instruction = constructor.newInstance();
 			return instruction;
-		} catch (Exception e) {
-		} 
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
 
 		return null;
 	}
