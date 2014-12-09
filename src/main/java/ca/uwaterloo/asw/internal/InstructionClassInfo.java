@@ -7,14 +7,18 @@ import ca.uwaterloo.asw.reflection.TypeToken;
 
 public interface InstructionClassInfo {
 
-	public List<Class<? extends Instruction<?, ?>>> getDependencies();
+	public TypeToken<?> getProduceData();
 
 	public List<TypeToken<?>> getRequireDatas();
 
-	public TypeToken<?> getProduceData();
-
-	public boolean isSupportAsync();
-
 	public boolean isSupportSingleton();
 	
+	public STATE getState();
+	
+	public static enum STATE {
+		Ready,
+		Running,
+		Blocking,
+		Terminated
+	}
 }
