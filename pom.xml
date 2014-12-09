@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>ca.uwaterloo</groupId>
-	<version>1.0.2-Beta</version>
-	<artifactId>asw</artifactId>
+	<version>1.1.0-Beta</version>
+	<artifactId>asw4j</artifactId>
 	<packaging>jar</packaging>
 
-	<name>amr</name>
+	<name>Auto Spread Work for Java</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
