@@ -4,18 +4,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import ca.uwaterloo.asw.DataNode;
 import ca.uwaterloo.asw.Instruction;
 import ca.uwaterloo.asw.ToolResolver;
-import ca.uwaterloo.asw.meta.DependOn;
-import ca.uwaterloo.asw.meta.ProduceData;
-import ca.uwaterloo.asw.meta.RequireData;
-import ca.uwaterloo.asw.meta.Singleton;
 import ca.uwaterloo.asw.reflection.TypeToken;
-import ca.uwaterloo.asw.reflection.TypeUtility;
 
 public class InstructionNode {
 
