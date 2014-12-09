@@ -1,10 +1,6 @@
 package ca.uwaterloo.asw.internal;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import ca.uwaterloo.asw.Instruction;
 import ca.uwaterloo.asw.meta.DependOn;
 import ca.uwaterloo.asw.meta.ProduceData;
@@ -14,24 +10,18 @@ import ca.uwaterloo.asw.reflection.TypeUtility;
 
 public class InstructionClassUtility {
 
-	public static List<Class<? extends Instruction<?, ?>>> getInstructionDependencies(
-			Class<? extends Instruction<?, ?>> instructionClass) {
+	public static final void checkPreconditionOfRequireDatas(String[] names,
+			Type[] types) {
 
-		List<Class<? extends Instruction<?, ?>>> dependencies = null;
-		DependOn dependOnAnnotation = instructionClass
-				.getAnnotation(DependOn.class);
-
-		if (dependOnAnnotation != null) {
-			Class<? extends Instruction<?, ?>>[] depends = dependOnAnnotation
-					.instructions();
-			if (depends != null) {
-				dependencies = Arrays.asList(depends);
+		if (types == null || types.length == 0) {
+			throw new IllegalArgumentException();
+		} else if (names == null || names.length == 0) {
+			if (types.length != 1) {
+				throw new IllegalArgumentException();
 			}
+		} else if (names.length != types.length) {
+			throw new IllegalArgumentException();
 		}
-		dependencies = dependencies == null ? new ArrayList<Class<? extends Instruction<?, ?>>>()
-				: dependencies;
-
-		return dependencies;
 	}
 
 	public static boolean getInstructionAsyncSupport(
@@ -47,16 +37,38 @@ public class InstructionClassUtility {
 		return true;
 	}
 
-	public static boolean getInstructionSingletonSupport(
+	public static Class<? extends Instruction<?, ?>>[] getInstructionDependencies(
 			Class<? extends Instruction<?, ?>> instructionClass) {
 
-		Singleton singletonAnnotation = instructionClass
-				.getAnnotation(Singleton.class);
-		if (singletonAnnotation != null) {
-			return true;
+		DependOn dependOnAnnotation = instructionClass
+				.getAnnotation(DependOn.class);
+
+		if (dependOnAnnotation != null) {
+			Class<? extends Instruction<?, ?>>[] depends = dependOnAnnotation
+					.instructions();
+			if (depends != null) {
+				return depends;
+			}
+		}
+		
+		return null;
+	}
+
+	public static final String getInstructionProduceDataName(
+			Class<? extends Instruction<?, ?>> instructionClass) {
+
+		ProduceData produceDataAnnotation = instructionClass
+				.getAnnotation(ProduceData.class);
+		if (produceDataAnnotation != null) {
+			return produceDataAnnotation.name();
 		}
 
-		return false;
+		return null;
+	}
+
+	public static final Type getInstructionProduceDataType(
+			Class<? extends Instruction<?, ?>> instructionClass) {
+		return TypeUtility.getSuperclassTypeParameter(instructionClass)[1];
 	}
 
 	public static final String[] getInstructionRequireDataNames(
@@ -86,34 +98,15 @@ public class InstructionClassUtility {
 				.getSuperclassTypeParameter(instructionClass)[0] };
 	}
 
-	public static final String getInstructionProduceDataName(
+	public static boolean getInstructionSingletonSupport(
 			Class<? extends Instruction<?, ?>> instructionClass) {
 
-		ProduceData produceDataAnnotation = instructionClass
-				.getAnnotation(ProduceData.class);
-		if (produceDataAnnotation != null) {
-			return produceDataAnnotation.name();
+		Singleton singletonAnnotation = instructionClass
+				.getAnnotation(Singleton.class);
+		if (singletonAnnotation != null) {
+			return true;
 		}
 
-		return null;
-	}
-
-	public static final Type getInstructionProduceDataType(
-			Class<? extends Instruction<?, ?>> instructionClass) {
-		return TypeUtility.getSuperclassTypeParameter(instructionClass)[1];
-	}
-
-	public static final void checkPreconditionOfRequireDatas(String[] names,
-			Type[] types) {
-
-		if (types == null || types.length == 0) {
-			throw new IllegalArgumentException();
-		} else if (names == null || names.length == 0) {
-			if (types.length != 1) {
-				throw new IllegalArgumentException();
-			}
-		} else if (names.length != types.length) {
-			throw new IllegalArgumentException();
-		}
+		return false;
 	}
 }
