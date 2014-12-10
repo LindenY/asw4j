@@ -1,7 +1,9 @@
 package ca.uwaterloo.asw4j;
 
+import java.lang.reflect.Type;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -14,15 +16,25 @@ public class ThreadPoolWorkerManager<T> extends AbstractWorkerManager<T> {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(ThreadPoolWorkerManager.class);
 
+	private int coreNumWorkers;
+	private int maxNumWorkers;
 	private ThreadPool threadPool;
 	
 	private AtomicLong allJobsTime;
+	
+	public ThreadPoolWorkerManager(
+			int coreNumWorkers, 
+			int maxNumWorkers,
+			AbstractDataStore dataStore) {
+
+		this(coreNumWorkers, maxNumWorkers, 30, dataStore, new SimpleInstructionResolver(dataStore));
+	}
 
 	public ThreadPoolWorkerManager(
 									int coreNumWorkers, 
 									int maxNumWorkers,
-									DataStore dataStore,
-									InstructionResolver instructionResolver ) {
+									AbstractDataStore dataStore,
+									AbstractInstructionResolver instructionResolver ) {
 
 		this(coreNumWorkers, maxNumWorkers, 30, dataStore, instructionResolver);
 	}
@@ -31,14 +43,14 @@ public class ThreadPoolWorkerManager<T> extends AbstractWorkerManager<T> {
 									int coreNumWorkers, 
 									int maxNumWorkers,
 									int maxQueueNum,
-									DataStore dataStore,
-									InstructionResolver instructionResolver ) {
+									AbstractDataStore dataStore,
+									AbstractInstructionResolver instructionResolver ) {
 		
-		super(coreNumWorkers, maxNumWorkers, dataStore, instructionResolver);
+		super(dataStore, instructionResolver);
 
 		BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(maxQueueNum);
 		
-		threadPool = new ThreadPool(
+		threadPool = new ThreadPool (
 				coreNumWorkers, 
 				maxNumWorkers, 
 				10, TimeUnit.SECONDS, 
@@ -47,7 +59,6 @@ public class ThreadPoolWorkerManager<T> extends AbstractWorkerManager<T> {
 		
 	}
 
-	@Override
 	public T start() {
 		
 		allJobsTime = new AtomicLong(0);
@@ -96,16 +107,18 @@ public class ThreadPoolWorkerManager<T> extends AbstractWorkerManager<T> {
 
 		return executedResult;
 	}
+	
+	public Future<T> asyncStart() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-	@Override
 	public void shutDown() {
 	}
 
-	@Override
 	public void shutDownNow() {
 	}
 
-	@Override
 	public void awaitShutDown(int timeOut) throws InterruptedException {
 	}
 	

@@ -33,13 +33,13 @@ public abstract class AbstractWorkerManager<T> implements WorkerManager<T>,
 		this.instructionResolver = instructionResolver;
 	}
 
-	public <T> void registerBalancer(TypeToken<T> typeToken,
-			Balancer<T> balancer) {
+	public void registerBalancer(TypeToken<?> typeToken,
+			Balancer<?> balancer) {
 		dataStore.registerBalancer(typeToken, balancer);
 	}
 
-	public <T> void registerCombiner(TypeToken<T> typeToken,
-			Combiner<T> combiner) {
+	public void registerCombiner(TypeToken<?> typeToken,
+			Combiner<?> combiner) {
 		dataStore.registerCombiner(typeToken, combiner);
 	}
 
@@ -79,5 +79,20 @@ public abstract class AbstractWorkerManager<T> implements WorkerManager<T>,
 		instructionResolver.registerInstructionClass(instructionClass,
 				requireDataNames, requireDataTypes, produceDataName);
 	}
+	
+	public void registerInstructionClass(
+			Class<? extends Instruction<?, ?>> instructionClass,
+			String[] requireDataNames, Type[] requireDataTypes,
+			String produceDataName, boolean supportSingleton) {
+		instructionResolver.registerInstructionClass(instructionClass,
+				requireDataNames, requireDataTypes, produceDataName,
+				supportSingleton);
+	}
+
+	public int numberOfRegisteredInstruction() {
+		return instructionResolver.numberOfRegisteredInstruction();
+	}
+	
+	
 
 }

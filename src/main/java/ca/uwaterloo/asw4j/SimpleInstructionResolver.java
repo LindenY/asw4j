@@ -8,27 +8,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ca.uwaterloo.asw4j.internal.InstructionNode;
 
 public class SimpleInstructionResolver extends AbstractInstructionResolver {
 
-	private final boolean enableCache;
 	private final Map<Class<? extends Instruction<?, ?>>, SimpleInstructionNode> instructionNodeMap;
 
+	public SimpleInstructionResolver(DataStore dataStore) {
+		this(null, dataStore, false);
+	}
+	
 	public SimpleInstructionResolver(ToolResolver toolResolver,
 			DataStore dataStore) {
 		this(toolResolver, dataStore, false);
 	}
 
 	public SimpleInstructionResolver(ToolResolver toolResolver,
-			DataStore dataStore, boolean enableCache) {
-		super(toolResolver, dataStore);
-		this.enableCache = enableCache;
+			DataStore dataStore, boolean enablePooling) {
+		super(dataStore, toolResolver, enablePooling);
 		this.instructionNodeMap = new HashMap<Class<? extends Instruction<?, ?>>, SimpleInstructionNode>();
-	}
-
-	public boolean isEnableCache() {
-		return enableCache;
 	}
 
 	public void register(

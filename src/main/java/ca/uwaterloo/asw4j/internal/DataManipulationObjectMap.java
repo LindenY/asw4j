@@ -17,13 +17,13 @@ public class DataManipulationObjectMap implements DataManipulationRegister {
 		balancers = new ConcurrentHashMap<TypeToken<?>, Balancer<?>>();
 	}
 	
-	public <T> void registerBalancer(TypeToken<T> typeToken,
-			Balancer<T> balancer) {
+	public void registerBalancer(TypeToken<?> typeToken,
+			Balancer<?> balancer) {
 		balancers.put(typeToken, balancer);
 	}
 
-	public <T> void registerCombiner(TypeToken<T> typeToken,
-			Combiner<T> combiner) {
+	public void registerCombiner(TypeToken<?> typeToken,
+			Combiner<?> combiner) {
 		combiners.put(typeToken, combiner);
 	}
 

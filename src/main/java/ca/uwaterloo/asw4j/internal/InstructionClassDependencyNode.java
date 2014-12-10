@@ -60,8 +60,8 @@ public class InstructionClassDependencyNode extends InstructionClassNode {
 		outgoings.add(dependencyNode);
 	}
 
-	public static void solveDependencies(
-			List<InstructionClassDependencyNode> dependencyNodes) {
+	public static void resolveDependencies(
+			List<? extends InstructionClassDependencyNode> dependencyNodes) {
 
 		Map<Class<?>, InstructionClassDependencyNode> instructionsMap = 
 				new HashMap<Class<?>, InstructionClassDependencyNode>();

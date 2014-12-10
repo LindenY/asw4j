@@ -211,13 +211,13 @@ public class ConcurrentMapDataStore extends AbstractDataStore {
 		return objs.get(0);
 	}
 
-	public <T> void registerBalancer(TypeToken<T> typeToken,
-			Balancer<T> balancer) {
+	public void registerBalancer(TypeToken<?> typeToken,
+			Balancer<?> balancer) {
 		manipulationObjectMap.registerBalancer(typeToken, balancer);
 	}
 
-	public <T> void registerCombiner(TypeToken<T> typeToken,
-			Combiner<T> combiner) {
+	public void registerCombiner(TypeToken<?> typeToken,
+			Combiner<?> combiner) {
 		manipulationObjectMap.registerCombiner(typeToken, combiner);
 	}
 	
