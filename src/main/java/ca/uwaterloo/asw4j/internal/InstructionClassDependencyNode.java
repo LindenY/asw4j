@@ -59,6 +59,13 @@ public class InstructionClassDependencyNode extends InstructionClassNode {
 	public void addOutgoing(InstructionClassDependencyNode dependencyNode) {
 		outgoings.add(dependencyNode);
 	}
+	
+	@Override
+	public void clear() {
+		incomings.clear();
+		outgoings.clear();
+		super.clear();
+	}
 
 	public static void resolveDependencies(
 			List<? extends InstructionClassDependencyNode> dependencyNodes) {
@@ -67,6 +74,7 @@ public class InstructionClassDependencyNode extends InstructionClassNode {
 				new HashMap<Class<?>, InstructionClassDependencyNode>();
 		
 		for (InstructionClassDependencyNode node : dependencyNodes) {
+			node.clear();
 			instructionsMap.put(node.getInstructionClass(), node);
 		}
 		
