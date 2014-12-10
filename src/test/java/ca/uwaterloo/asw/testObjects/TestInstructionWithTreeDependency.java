@@ -2,13 +2,13 @@ package ca.uwaterloo.asw.testObjects;
 
 import java.util.Date;
 
-import ca.uwaterloo.asw.DataNode;
-import ca.uwaterloo.asw.Instruction;
-import ca.uwaterloo.asw.ToolResolver;
-import ca.uwaterloo.asw.meta.DependOn;
-import ca.uwaterloo.asw.meta.ProduceData;
-import ca.uwaterloo.asw.meta.RequireData;
-import ca.uwaterloo.asw.meta.Singleton;
+import ca.uwaterloo.asw4j.DataNode;
+import ca.uwaterloo.asw4j.Instruction;
+import ca.uwaterloo.asw4j.ToolResolver;
+import ca.uwaterloo.asw4j.meta.DependOn;
+import ca.uwaterloo.asw4j.meta.ProduceData;
+import ca.uwaterloo.asw4j.meta.RequireData;
+import ca.uwaterloo.asw4j.meta.Singleton;
 
 /**
  * Dependency Structure:

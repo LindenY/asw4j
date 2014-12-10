@@ -8,10 +8,10 @@ import java.util.List;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import ca.uwaterloo.asw.ConcurrentMapDataStore;
-import ca.uwaterloo.asw.DataNode;
-import ca.uwaterloo.asw.DataStore;
-import ca.uwaterloo.asw.reflection.TypeToken;
+import ca.uwaterloo.asw4j.ConcurrentMapDataStore;
+import ca.uwaterloo.asw4j.DataNode;
+import ca.uwaterloo.asw4j.DataStore;
+import ca.uwaterloo.asw4j.reflection.TypeToken;
 
 public class ConcurrentMapDataStoreTest {
 

@@ -7,15 +7,15 @@ import java.util.Date;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import ca.uwaterloo.asw.ConcurrentMapDataStore;
-import ca.uwaterloo.asw.DataStore;
-import ca.uwaterloo.asw.ToolResolver;
-import ca.uwaterloo.asw.Instruction;
-import ca.uwaterloo.asw.InstructionResolver;
-import ca.uwaterloo.asw.SimpleInstructionResolver;
-import ca.uwaterloo.asw.reflection.TypeToken;
 import ca.uwaterloo.asw.testObjects.TestInstructionWithoutDependency.InstructionWithAnnotation;
 import ca.uwaterloo.asw.testObjects.TestInstructionWithoutDependency.InstructionWithoutAnnotation;
+import ca.uwaterloo.asw4j.ConcurrentMapDataStore;
+import ca.uwaterloo.asw4j.DataStore;
+import ca.uwaterloo.asw4j.Instruction;
+import ca.uwaterloo.asw4j.InstructionResolver;
+import ca.uwaterloo.asw4j.SimpleInstructionResolver;
+import ca.uwaterloo.asw4j.ToolResolver;
+import ca.uwaterloo.asw4j.reflection.TypeToken;
 
 public class SimpleInstructionResolverTest {
 

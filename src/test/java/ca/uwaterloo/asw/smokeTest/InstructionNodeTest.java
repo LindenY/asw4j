@@ -9,11 +9,11 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import ca.uwaterloo.asw.Instruction;
-import ca.uwaterloo.asw.internal.InstructionNode;
 import ca.uwaterloo.asw.testObjects.TestInstruction0;
 import ca.uwaterloo.asw.testObjects.TestInstruction1;
 import ca.uwaterloo.asw.testObjects.TestInstruction2;
+import ca.uwaterloo.asw4j.Instruction;
+import ca.uwaterloo.asw4j.internal.InstructionNode;
 
 public class InstructionNodeTest {
 

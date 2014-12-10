@@ -13,16 +13,16 @@ import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import ca.uwaterloo.asw.DataNode;
-import ca.uwaterloo.asw.Instruction;
-import ca.uwaterloo.asw.ToolResolver;
-import ca.uwaterloo.asw.internal.InstructionNode;
-import ca.uwaterloo.asw.reflection.TypeToken;
-import ca.uwaterloo.asw.reflection.TypeUtility;
 import ca.uwaterloo.asw.testObjects.TestInstruction0;
 import ca.uwaterloo.asw.testObjects.TestInstruction1;
 import ca.uwaterloo.asw.testObjects.TestInstructionWithoutDependency.InstructionWithGenericType;
 import ca.uwaterloo.asw.testObjects.TestInstructionWithoutDependency.InstructionWithoutParameterizedTypes;
+import ca.uwaterloo.asw4j.DataNode;
+import ca.uwaterloo.asw4j.Instruction;
+import ca.uwaterloo.asw4j.ToolResolver;
+import ca.uwaterloo.asw4j.internal.InstructionNode;
+import ca.uwaterloo.asw4j.reflection.TypeToken;
+import ca.uwaterloo.asw4j.reflection.TypeUtility;
 
 public class TypeUtilityTest {
 

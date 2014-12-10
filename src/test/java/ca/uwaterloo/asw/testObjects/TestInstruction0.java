@@ -2,8 +2,8 @@ package ca.uwaterloo.asw.testObjects;
 
 import java.util.Date;
 
-import ca.uwaterloo.asw.Instruction;
-import ca.uwaterloo.asw.ToolResolver;
+import ca.uwaterloo.asw4j.Instruction;
+import ca.uwaterloo.asw4j.ToolResolver;
 
 public class TestInstruction0 extends Instruction<Date, String> {
 

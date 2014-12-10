@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import ca.uwaterloo.asw.DataNode;
+import ca.uwaterloo.asw4j.DataNode;
 
 public class DataNodeTest {
 
