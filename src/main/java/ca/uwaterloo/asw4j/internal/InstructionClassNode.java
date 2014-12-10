@@ -9,8 +9,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.uwaterloo.asw4j.Instruction;
 import ca.uwaterloo.asw4j.ToolResolver;
+import ca.uwaterloo.asw4j.meta.Singleton;
 import ca.uwaterloo.asw4j.reflection.TypeToken;
 
+/**
+ * <p>
+ * 	A helper class which implements {@link InstructionClassInfo} and {@link InstructionClassOmitter}
+ *  to provide some useful functions for working with {@link Instruction} class.
+ * </p>
+ * 
+ * @author Desmond Lin
+ * @since 1.0.0
+ */
 public class InstructionClassNode implements InstructionClassInfo, InstructionClassOmitter {
 
 	protected final Class<? extends Instruction<?, ?>> instructionClass;
@@ -23,6 +33,18 @@ public class InstructionClassNode implements InstructionClassInfo, InstructionCl
 	
 	protected List<Instruction<?, ?>> pool;
 	
+	/**
+	 * <p>
+	 * 	Constructor for {@link InstructionClassNode} class
+	 * </p>
+	 * @param instructionClass The class object of {@link Instruction}
+	 * @param requireDataNames The require data names of {@link Instruction}
+	 * @param requireDataTypes The require data types of {@link Instruction}
+	 * @param produceDataName  The produce data name of {@link Instruction}
+	 * @param produceDataType  The produce data type of {@link Instruction}
+	 * @param supportSingleton if {@link Instruction} support {@link Singleton}
+	 * @param enablePooling    if enable pooling
+	 */
 	public InstructionClassNode(Class<? extends Instruction<?, ?>> instructionClass,
 			String[] requireDataNames, 
 			Type[] requireDataTypes,
@@ -77,7 +99,9 @@ public class InstructionClassNode implements InstructionClassInfo, InstructionCl
 			}
 		}
 		
-		numOfInstructionIssued.incrementAndGet();
+		if (instruction != null) {
+			numOfInstructionIssued.incrementAndGet();
+		}
 		
 		return instruction;
 		
@@ -98,6 +122,23 @@ public class InstructionClassNode implements InstructionClassInfo, InstructionCl
 	public boolean isSupportSingleton() {
 		return supportSingleton;
 	}
+	
+	public STATE getState() {
+		return state;
+	}
+	
+	/**
+	 * <p>
+	 * 	Set the state
+	 * </p>
+	 * 
+	 * @param state the {@link STATE} to be set.
+	 */
+	public void setState(STATE state) {
+		synchronized (this.state) {
+			this.state = state;
+		}
+	}
 
 	public int numberOfInstructionIssued() {
 		return numOfInstructionIssued.get();
@@ -113,15 +154,4 @@ public class InstructionClassNode implements InstructionClassInfo, InstructionCl
 		
 		numOfInstructionIssued.decrementAndGet();
 	}
-	
-	public STATE getState() {
-		return state;
-	}
-	
-	public void setState(STATE state) {
-		synchronized (this.state) {
-			this.state = state;
-		}
-	}
-
 }
