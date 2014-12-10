@@ -11,20 +11,23 @@ import ca.uwaterloo.asw4j.internal.InstructionClassUtility;
 import ca.uwaterloo.asw4j.internal.InstructionClassInfo.STATE;
 
 /**
+ * <pre>
  * A {@link InstructionResolver} that resolves dependencies relationship between
  * {@link Instruction}s, and resolves {@link Instruction}s in the order of their
  * dependencies when invokes {@link #resolveInstruction()}.
- * 
+ * </pre>
+ * <p>
+ * </p>
  * 
  * @author Desmond Lin
+ * @since 1.0.0
  *
  */
-public abstract class DAGInstructionResolver extends AbstractInstructionResolver {
+public class DAGInstructionResolver extends AbstractInstructionResolver {
 
 	
 	private boolean requireResolve;
 	private List<MarkableDependencyNode> instructionClassNodes;
-	private int numOfRegisteredInstruction;
 	
 	public DAGInstructionResolver(DataStore dataStore) {
 		this(null, dataStore, true);
@@ -34,11 +37,10 @@ public abstract class DAGInstructionResolver extends AbstractInstructionResolver
 		super(dataStore, toolResolver, enablePooling);
 		
 		instructionClassNodes = new ArrayList<DAGInstructionResolver.MarkableDependencyNode>();
-		numOfRegisteredInstruction = 0;
 	}
 
 	public int numberOfRegisteredInstruction() {
-		return numOfRegisteredInstruction;
+		return instructionClassNodes.size();
 	}
 
 	public void registerInstructionClass(
@@ -136,8 +138,10 @@ public abstract class DAGInstructionResolver extends AbstractInstructionResolver
 						.getInstructionProduceDataType(instructionClass),
 				supportSingleton, enablePooling, dependencies, supportAsync);
 		
-		for (Class<? extends Instruction<?, ?>> d : mdn.getDependencies()) {
-			registerInstructionClass(d);
+		if (mdn.getDependencies() != null) {
+			for (Class<? extends Instruction<?, ?>> d : mdn.getDependencies()) {
+				registerInstructionClass(d);
+			}
 		}
 
 		instructionClassNodes.add(mdn);
@@ -153,6 +157,7 @@ public abstract class DAGInstructionResolver extends AbstractInstructionResolver
 		if (requireResolve) {
 			InstructionClassDependencyNode.resolveDependencies(instructionClassNodes);
 			resolveDependentsOrder();
+			requireResolve = false;
 		}
 		
 		Instruction<?, ?> instruction = null;
@@ -167,7 +172,7 @@ public abstract class DAGInstructionResolver extends AbstractInstructionResolver
 			} else {
 
 				if (dataStore.containAll(nextDN.getRequireDatas())) {
-
+					
 					nextDN.setState(STATE.Running);
 					instruction = nextDN
 							.getInstanceOfInstruction(toolResolver);
@@ -205,6 +210,7 @@ public abstract class DAGInstructionResolver extends AbstractInstructionResolver
 		}
 		
 		instructionClassNodes = dependentsOrder;
+		
 	}
 	
 	private void visitDependencyNode(MarkableDependencyNode dependencyNode,
@@ -212,7 +218,7 @@ public abstract class DAGInstructionResolver extends AbstractInstructionResolver
 
 		if (dependencyNode.getMark() == MarkableDependencyNode.MARK.unmark) {
 			dependencyNode.mark(MarkableDependencyNode.MARK.temp);
-			for (InstructionClassDependencyNode outgoing : dependencyNode.getOutgoings()) {
+			for (InstructionClassDependencyNode outgoing : dependencyNode.getIncomings()) {
 				MarkableDependencyNode markable = (MarkableDependencyNode) outgoing;
 				visitDependencyNode(markable, dependentOrder);
 			}
@@ -303,6 +309,12 @@ public abstract class DAGInstructionResolver extends AbstractInstructionResolver
 					}
 				}
 			}
+		}
+		
+		@Override
+		public void clear() {
+			mark = MARK.unmark;
+			super.clear();
 		}
 	}
 }
