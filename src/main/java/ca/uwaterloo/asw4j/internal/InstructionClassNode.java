@@ -75,6 +75,8 @@ public class InstructionClassNode implements InstructionClassInfo, InstructionCl
 		if (enablePooling) {
 			this.pool = new ArrayList<Instruction<?,?>>();
 		}
+		
+		state = STATE.Ready;
 	}
 
 	public Instruction<?, ?> getInstanceOfInstruction(ToolResolver toolResolver)
@@ -101,6 +103,10 @@ public class InstructionClassNode implements InstructionClassInfo, InstructionCl
 		
 		if (instruction != null) {
 			numOfInstructionIssued.incrementAndGet();
+		}
+		
+		if (isSupportSingleton() && numberOfInstructionIssued() > 0) {
+			setState(STATE.Blocking);
 		}
 		
 		return instruction;
@@ -146,12 +152,25 @@ public class InstructionClassNode implements InstructionClassInfo, InstructionCl
 
 	public void returnInstanceOfInstruction(Instruction<?, ?> instruction) {
 		
+		numOfInstructionIssued.decrementAndGet();
+		
+		if (getState() == STATE.Blocking 
+				&& isSupportSingleton() 
+				&& numberOfInstructionIssued() <= 0) {
+			setState(STATE.Ready);
+		}
+		
 		if (pool != null) {
 			synchronized (pool) {
 				pool.add(instruction);
 			}
 		}
-		
-		numOfInstructionIssued.decrementAndGet();
+	}
+	
+	public void clear() {
+		if (pool != null) {
+			pool = new ArrayList<Instruction<?,?>>();
+		}
+		setState(STATE.Ready);
 	}
 }
