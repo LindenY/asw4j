@@ -1,7 +1,6 @@
 package ca.uwaterloo.asw4j;
 
 
-import ca.uwaterloo.asw4j.DataNode;
 
 public abstract  class Instruction<R, P> implements Runnable {
 	
