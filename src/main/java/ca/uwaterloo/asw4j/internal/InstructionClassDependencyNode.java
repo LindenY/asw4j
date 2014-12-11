@@ -10,6 +10,21 @@ import java.util.Set;
 import ca.uwaterloo.asw4j.Instruction;
 
 public class InstructionClassDependencyNode extends InstructionClassNode {
+	
+	public static enum DEPENDENCY_STATE implements STATE {
+		BlockedByDependency("BlockedByDependency");
+
+		private 
+		
+		public DEPENDENCY_STATE(String stateName) {
+			
+		}
+		
+		public String getStateName() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	}
 
 	private Set<InstructionClassDependencyNode> incomings;
 	private Set<InstructionClassDependencyNode> outgoings;
