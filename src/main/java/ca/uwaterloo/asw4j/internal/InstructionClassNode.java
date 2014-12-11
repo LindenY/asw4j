@@ -28,7 +28,7 @@ public class InstructionClassNode {
 	protected final TypeToken<?> produceData;
 	protected final boolean supportSingleton;
 
-	protected STATE state;
+	protected InstructionClassState state;
 	protected AtomicInteger numOfInstructionIssued;
 
 	protected List<Instruction<?, ?>> pool;
@@ -81,7 +81,7 @@ public class InstructionClassNode {
 			this.pool = new ArrayList<Instruction<?, ?>>();
 		}
 
-		state = BASIC_STATE.Ready;
+		setState(InstructionClassState.Ready());
 	}
 
 	/**
@@ -137,7 +137,7 @@ public class InstructionClassNode {
 		}
 
 		if (isSupportSingleton() && numberOfInstructionIssued() > 0) {
-			setState(BASIC_STATE.BlockedBySingleton);
+			setState(InstructionClassState.BlockedBySingleton());
 		}
 
 		return instruction;
@@ -160,20 +160,12 @@ public class InstructionClassNode {
 		return supportSingleton;
 	}
 
-	public STATE getState() {
+	public InstructionClassState getState() {
 		return state;
 	}
 
-	/**
-	 * <p>
-	 * Set the state
-	 * </p>
-	 * 
-	 * @param state
-	 *            the {@link STATE} to be set.
-	 */
-	public void setState(STATE state) {
-		synchronized (this.state) {
+	public void setState(InstructionClassState state) {
+		synchronized ("state") {
 			this.state = state;
 		}
 	}
@@ -212,9 +204,10 @@ public class InstructionClassNode {
 
 		numOfInstructionIssued.decrementAndGet();
 
-		if (getState() == BASIC_STATE.BlockedBySingleton && isSupportSingleton()
+		if (getState() == InstructionClassState.BlockedBySingleton() 
+				&& isSupportSingleton()
 				&& numberOfInstructionIssued() <= 0) {
-			setState(BASIC_STATE.Ready);
+			setState(InstructionClassState.Ready());
 		}
 
 		if (pool != null) {
@@ -234,51 +227,7 @@ public class InstructionClassNode {
 		if (pool != null) {
 			pool = new ArrayList<Instruction<?, ?>>();
 		}
-		setState(BASIC_STATE.Ready);
+		setState(InstructionClassState.Ready());
 	}
 	
-	/**
-	 * <p>
-	 * Basic {@link STATE} representation for {@link Instruction} class
-	 * </p>
-	 * 
-	 * <p>
-	 * States:
-	 * <ul>
-	 * <li>Ready: the {@link Instruction} class is ready to run.</li>
-	 * <li>BlockedBySingleton: the {@link Instruction} class is blocked.</li>
-	 * <li>Terminated: the {@link Instruction} class finished running.</li>
-	 * </ul>
-	 * </p>
-	 * 
-	 * @author Desmond Lin
-	 * @since 1.0.0
-	 */
-	public static enum BASIC_STATE implements STATE {
-		Ready ("Ready"), 
-		BlockedBySingleton ("Instruction is blocked by singleton property."), 
-		Terminated ("Terminated");
-		
-		private String message;
-		
-		private BASIC_STATE(String message) {
-			this.message = message;
-		}
-		
-		public String getStateMessage() {
-			return message;
-		}
-	}
-	
-	/**
-	 * <p>
-	 * A interface for representing the state of {@link Instruction} class
-	 * </p>
-	 * 
-	 * @author Desmond Lin
-	 * @since 1.0.0
-	 */
-	public interface STATE {
-		public String getStateMessage();
-	}
 }
