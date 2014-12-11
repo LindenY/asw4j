@@ -6,9 +6,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.uwaterloo.asw4j.internal.InstructionClassDependencyNode;
 import ca.uwaterloo.asw4j.internal.InstructionClassUtility;
-import ca.uwaterloo.asw4j.internal.InstructionClassInfo.STATE;
+import ca.uwaterloo.asw4j.internal.InstructionClassState;
 
 /**
  * <pre>
@@ -24,7 +27,8 @@ import ca.uwaterloo.asw4j.internal.InstructionClassInfo.STATE;
  *
  */
 public class DAGInstructionResolver extends AbstractInstructionResolver {
-
+	
+	private final static Logger LOG = LoggerFactory.getLogger(DAGInstructionResolver.class);
 	
 	private boolean requireResolve;
 	private List<MarkableDependencyNode> instructionClassNodes;
@@ -37,10 +41,6 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		super(dataStore, toolResolver, enablePooling);
 		
 		instructionClassNodes = new ArrayList<DAGInstructionResolver.MarkableDependencyNode>();
-	}
-
-	public int numberOfRegisteredInstruction() {
-		return instructionClassNodes.size();
 	}
 
 	public void registerInstructionClass(
@@ -166,14 +166,11 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		while (iterator.hasNext()) {
 			MarkableDependencyNode nextDN = iterator.next();
 			
-			if (nextDN.getState() == STATE.Blocking
-					|| nextDN.getState() == STATE.Terminated) {
+			if (nextDN.getState() != InstructionClassState.Ready()) {
 				continue;
 			} else {
 
 				if (dataStore.containAll(nextDN.getRequireDatas())) {
-					
-					nextDN.setState(STATE.Running);
 					instruction = nextDN
 							.getInstanceOfInstruction(toolResolver);
 					instruction.setRequireData(dataStore.getAndRemoveAll(nextDN
@@ -183,17 +180,24 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 					
 					boolean isReady = false;
 					for (InstructionClassDependencyNode dn : nextDN.getOutgoings()) {
-						if (dn.getState() != STATE.Terminated) {
+						if (dn.getState() != InstructionClassState.Terminated()) {
 							isReady = true;
 							break;
 						}
 					}
 					
 					if (nextDN.numberOfInstructionIssued() <= 0  && !isReady) {
-						nextDN.setState(STATE.Terminated);
+						nextDN.setState(InstructionClassState.Terminated());
 					}
 				}
 			}
+		}
+		
+		if (LOG.isTraceEnabled()) {
+			for (MarkableDependencyNode d : instructionClassNodes) {
+				LOG.trace(d.getInstructionClass().getName() + " State=" + d.getState());
+			}
+			LOG.trace("Resolved Instruction: " + (instruction == null ? null : instruction.getClass().getName()));
 		}
 		
 		return instruction;
@@ -276,39 +280,6 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		
 		public MARK getMark() {
 			return mark;
-		}
-		
-		@Override
-		public void setState(STATE state) {
-			this.state = state;
-
-			InstructionClassDependencyNode parent = null;
-			
-			if (getIncomings() != null) {
-				for (InstructionClassDependencyNode idn : getIncomings()) {
-					parent = idn;
-					break;
-				}
-			}
-			
-			if (parent != null && !parent.isSupportAsync()) {
-				if (state != STATE.Terminated) {
-					parent.setState(STATE.Blocking);
-				} else {
-					boolean isReady = true;
-
-					for (InstructionClassDependencyNode child : parent.getOutgoings()) {
-						if (child.getState() != STATE.Terminated) {
-							isReady = false;
-							break;
-						}
-					}
-					
-					if (isReady) {
-						parent.setState(STATE.Ready);
-					}
-				}
-			}
 		}
 		
 		@Override
