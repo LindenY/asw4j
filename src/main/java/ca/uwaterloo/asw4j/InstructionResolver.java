@@ -4,6 +4,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 
 public interface InstructionResolver {
+	
+	public void setDataStore(DataStore dataStore);
+	
+	public DataStore getDataStore();
 
 	public void afterInstructionExecution(Instruction<?, ?> instruction,
 			Throwable throwed);
