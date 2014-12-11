@@ -10,21 +10,6 @@ import java.util.Set;
 import ca.uwaterloo.asw4j.Instruction;
 
 public class InstructionClassDependencyNode extends InstructionClassNode {
-	
-	public static enum DEPENDENCY_STATE implements STATE {
-		BlockedByDependency("BlockedByDependency");
-
-		private 
-		
-		public DEPENDENCY_STATE(String stateName) {
-			
-		}
-		
-		public String getStateName() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-	}
 
 	private Set<InstructionClassDependencyNode> incomings;
 	private Set<InstructionClassDependencyNode> outgoings;
@@ -76,6 +61,43 @@ public class InstructionClassDependencyNode extends InstructionClassNode {
 	}
 	
 	@Override
+	public void setState(InstructionClassState state) {
+		super.setState(state);
+		if (state == InstructionClassState.Terminated()) {
+			for (InstructionClassDependencyNode d : incomings) {
+				changeIncomingNodeToReady(d);
+			}
+		} else {
+			if (incomings != null) {
+				for (InstructionClassDependencyNode d : incomings) {
+					if (!d.supportAsync) {
+						d.setState(InstructionClassDependencyState
+								.BlockedByDependency());
+					}
+				}
+			}
+		}
+	}
+	
+	private void changeIncomingNodeToReady(InstructionClassDependencyNode node) {
+		if (!node.supportAsync) {
+			boolean isReady = true;
+			for (InstructionClassDependencyNode n : node.outgoings) {
+				if (n.state != InstructionClassState.Terminated()) {
+					isReady = false;
+					break;
+				}
+			}
+			
+			if (isReady) {
+				node.setState(InstructionClassState.Ready());
+			} else {
+				node.setState(InstructionClassDependencyState.BlockedByDependency);
+			}
+		}
+	}
+	
+	@Override
 	public void clear() {
 		incomings.clear();
 		outgoings.clear();
@@ -106,6 +128,21 @@ public class InstructionClassDependencyNode extends InstructionClassNode {
 					dependent.addIncoming(node);
 				}
 			}
+		}
+	}
+	
+	public static class InstructionClassDependencyState extends InstructionClassState {
+
+		protected InstructionClassDependencyState(STATE state,
+				String stateMessage) {
+			super(state, stateMessage);
+		}
+		
+		private final static InstructionClassState BlockedByDependency 
+			= new InstructionClassState(STATE.Blocked, "Instruction is blocked by dependency");
+		
+		public final static InstructionClassState BlockedByDependency() {
+			return BlockedByDependency;
 		}
 	}
 }
