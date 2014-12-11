@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ca.uwaterloo.asw4j.DataNode;
 import ca.uwaterloo.asw4j.reflection.TypeToken;
 
 public interface DataStore {
