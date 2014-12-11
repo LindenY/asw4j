@@ -2,43 +2,38 @@ package ca.uwaterloo.asw4j;
 
 import java.lang.reflect.Type;
 
-import ca.uwaterloo.asw4j.reflection.TypeToken;
+public abstract class AbstractWorkerManager implements WorkerManager {
 
-public abstract class AbstractWorkerManager<T> implements WorkerManager<T> {
+	protected InstructionResolver instructionResolver;
+	protected ExceptionHandlePolicy exceptionHandlePolicy;
+	protected volatile STATE state;
 
-	protected DataStore dataStore;
-	protected AbstractInstructionResolver instructionResolver;
-
-	public AbstractWorkerManager(DataStore dataStore,
-			AbstractInstructionResolver instructionResolver) {
-		this.dataStore = dataStore;
+	public AbstractWorkerManager(InstructionResolver instructionResolver) {
 		this.instructionResolver = instructionResolver;
-	}
-
-	public DataStore getDataStore() {
-		return dataStore;
 	}
 
 	public InstructionResolver getInstructionResolver() {
 		return instructionResolver;
 	}
 
-	public void setDataStore(DataStore dataStore) {
-		this.dataStore = dataStore;
-	}
-
 	public void setInstructionResolver(
 			AbstractInstructionResolver instructionResolver) {
 		this.instructionResolver = instructionResolver;
 	}
-
-	public void registerBalancer(TypeToken<?> typeToken, Balancer<?> balancer) {
-		dataStore.registerBalancer(typeToken, balancer);
+	
+	public ExceptionHandlePolicy getExceptionHandlePolicy() {
+		return exceptionHandlePolicy;
 	}
 
-	public void registerCombiner(TypeToken<?> typeToken, Combiner<?> combiner) {
-		dataStore.registerCombiner(typeToken, combiner);
+	public void setExceptionHandlePolicy(ExceptionHandlePolicy exceptionHandlePolicy) {
+		this.exceptionHandlePolicy = exceptionHandlePolicy;
 	}
+	
+	public STATE getState() {
+		return state;
+	}
+	
+	
 
 	public void registerInstructionClass(
 			Class<? extends Instruction<?, ?>> instructionClass) {
@@ -89,5 +84,5 @@ public abstract class AbstractWorkerManager<T> implements WorkerManager<T> {
 	public int numberOfRegisteredInstruction() {
 		return instructionResolver.numberOfRegisteredInstruction();
 	}
-
+	
 }
