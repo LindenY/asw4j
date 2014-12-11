@@ -42,18 +42,16 @@ public class InstructionClassNodeTest {
 			null, Date.class, false, false);
 	
 	
-	
+	String[] requireDateNames1 = {"Hello", " ", "World"};
 	InstructionClassNode node1 = new InstructionClassNode(
-			Instruction1.class, new String[] {"Hello", " ", "World"}, new Class<?>[] {String.class}, 
+			Instruction1.class, requireDateNames1, new Class<?>[] {String.class, String.class, String.class}, 
 			"Hello World", String.class, true, false);
 	
 	@Test
 	public void testConstructorWithLegalParameters() {
 		
-		InstructionClassNode node0 = new InstructionClassNode(
-				Instruction0.class, null, new Class<?>[] {String.class}, 
-				null, Date.class, false, false);
-		
+		assertFalse(node0.isSupportSingleton());
+		assertTrue(node1.isSupportSingleton());
 		
 	}
 	
@@ -65,15 +63,22 @@ public class InstructionClassNodeTest {
 	@Test
 	public void testGetRequireDatas() {
 		
-		List<TypeToken<?>> requireDatas = new ArrayList<TypeToken<?>>();
-		requireDatas.add(TypeToken.get(String.class));
-		assertTrue(node0.getRequireDatas().equals(requireDatas));
+		List<TypeToken<?>> requireDatas0 = new ArrayList<TypeToken<?>>();
+		requireDatas0.add(TypeToken.get(String.class));
+		assertTrue(node0.getRequireDatas().equals(requireDatas0));
+		
+		List<TypeToken<?>> requireDatas1 = new ArrayList<TypeToken<?>>();
+		requireDatas1.add(TypeToken.get(String.class, "Hello"));
+		requireDatas1.add(TypeToken.get(String.class, " "));
+		requireDatas1.add(TypeToken.get(String.class, "World"));
+		assertTrue(node1.getRequireDatas().equals(requireDatas1));
 	}
 	
 	@Test
 	public void testGetProduceData() {
 	
 		assertTrue(node0.getProduceData().equals(TypeToken.get(Date.class)));
+		assertTrue(node1.getProduceData().equals(TypeToken.get(String.class, "Hello World")));
 	}
 	
 	@Test
