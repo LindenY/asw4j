@@ -1,22 +1,24 @@
 package ca.uwaterloo.asw4j;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ca.uwaterloo.asw4j.internal.InstructionClassNode;
+import ca.uwaterloo.asw4j.internal.InstructionClassState;
+import ca.uwaterloo.asw4j.internal.InstructionClassUtility;
 
 public class SimpleInstructionResolver extends AbstractInstructionResolver {
-
-	private final Map<Class<? extends Instruction<?, ?>>, SimpleInstructionNode> instructionNodeMap;
+	
+	private final static Logger LOG = LoggerFactory.getLogger(SimpleInstructionResolver.class);
 
 	public SimpleInstructionResolver(DataStore dataStore) {
 		this(null, dataStore, false);
 	}
-	
+
 	public SimpleInstructionResolver(ToolResolver toolResolver,
 			DataStore dataStore) {
 		this(toolResolver, dataStore, false);
@@ -25,116 +27,102 @@ public class SimpleInstructionResolver extends AbstractInstructionResolver {
 	public SimpleInstructionResolver(ToolResolver toolResolver,
 			DataStore dataStore, boolean enablePooling) {
 		super(dataStore, toolResolver, enablePooling);
-		this.instructionNodeMap = new HashMap<Class<? extends Instruction<?, ?>>, SimpleInstructionNode>();
 	}
 
-	public void register(
-			String[] requireDataNames,
-			Type[] requireDataTypes, 
-			String produceDataName,
+	public void registerInstructionClass(
 			Class<? extends Instruction<?, ?>> instructionClass) {
 
-		instructionNodeMap.put(instructionClass, 
-				new SimpleInstructionNode(
-						requireDataNames, 
-						requireDataTypes, 
-						produceDataName, 
-						instructionClass, 
-						enableCache));
+		registerInstructionClass(instructionClass,
+				InstructionClassUtility
+						.getInstructionRequireDataNames(instructionClass),
+				InstructionClassUtility
+						.getInstructionRequireDataTypes(instructionClass),
+				InstructionClassUtility
+						.getInstructionProduceDataName(instructionClass),
+				InstructionClassUtility
+						.getInstructionSingletonSupport(instructionClass));
 	}
 
-	public void register(Class<? extends Instruction<?, ?>> instructionClass) {
+	public void registerInstructionClass(
+			Class<? extends Instruction<?, ?>> instructionClass,
+			String produceDataName) {
 
-		String[] requireDataNames = InstructionNode
-				.getInstructionRequireDataNames(instructionClass);
-		Type[] requireDataTypes = InstructionNode
-				.getInstructionRequireDataTypes(instructionClass);
-		String produceDataName = InstructionNode
-				.getInstructionProduceDataName(instructionClass);
-
-		register(requireDataNames, requireDataTypes, produceDataName, instructionClass);
+		registerInstructionClass(instructionClass,
+				InstructionClassUtility
+						.getInstructionRequireDataNames(instructionClass),
+				InstructionClassUtility
+						.getInstructionRequireDataTypes(instructionClass),
+				produceDataName,
+				InstructionClassUtility
+						.getInstructionSingletonSupport(instructionClass));
 	}
 
-	public int numberOfRegisteredInstruction() {
-		return instructionNodeMap.keySet().size();
+	public void registerInstructionClass(
+			Class<? extends Instruction<?, ?>> instructionClass,
+			String[] requireDataNames, Type[] requireDataTypes) {
+
+		registerInstructionClass(instructionClass, requireDataNames,
+				requireDataTypes,
+				InstructionClassUtility
+						.getInstructionProduceDataName(instructionClass),
+				InstructionClassUtility
+						.getInstructionSingletonSupport(instructionClass));
 	}
 
-	public Instruction<?, ?> resolveInstruction() {
+	public void registerInstructionClass(
+			Class<? extends Instruction<?, ?>> instructionClass,
+			String[] requireDataNames, Type[] requireDataTypes,
+			String produceDataName) {
+
+		registerInstructionClass(instructionClass, requireDataNames,
+				requireDataTypes, produceDataName,
+				InstructionClassUtility
+						.getInstructionSingletonSupport(instructionClass));
+	}
+
+	public void registerInstructionClass(
+			Class<? extends Instruction<?, ?>> instructionClass,
+			String[] requireDataNames, Type[] requireDataTypes,
+			String produceDataName, boolean supportSingleton) {
+
+		putIntructionClassNode(new InstructionClassNode(instructionClass,
+				requireDataNames, requireDataTypes, produceDataName,
+				InstructionClassUtility
+						.getInstructionProduceDataType(instructionClass),
+				supportSingleton, enablePooling));
+	}
+
+	public Instruction<?, ?> resolveInstruction() throws NoSuchMethodException,
+			SecurityException, InstantiationException, IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException {
+
+		Instruction<?, ?> instruction = null;
 		
-		Iterator<SimpleInstructionNode> iterator = instructionNodeMap.values()
+		Iterator<InstructionClassNode> iterator = instructionClassMap.values()
 				.iterator();
 		while (iterator.hasNext()) {
 
-			SimpleInstructionNode nextIN = iterator.next();
-			
-			if (nextIN.isSupportSingleton() && nextIN.issuedNum.get() > 0) {
+			InstructionClassNode nextIN = iterator.next();
+
+			if (nextIN.getState() != InstructionClassState.Ready()) {
 				continue;
 			} else if (dataStore.containAll(nextIN.getRequireDatas())) {
 				DataNode requireData = dataStore.getAndRemoveAll(nextIN
 						.getRequireDatas());
-				Instruction<?, ?> instruction = nextIN
-						.getInstructionInstance(toolResolver);
+				instruction = nextIN
+						.getInstanceOfInstruction(toolResolver);
 				instruction.setRequireData(requireData);
 				return instruction;
 			}
 		}
-
-		return null;
-	}
-
-	@Override
-	public void afterInstructionExecution(Instruction<?, ?> instruction) {
-		SimpleInstructionNode instructionNode = instructionNodeMap
-				.get(instruction.getClass());
-
-		instructionNode.returnInstruction(instruction);
-	}
-
-	private static class SimpleInstructionNode extends InstructionNode {
-
-		private List<Instruction<?, ?>> pool;
-		private AtomicInteger issuedNum;
-
-		public SimpleInstructionNode(String[] requireDataNames,
-				Type[] requireDataTypes, String produceDataName,
-				Class<? extends Instruction<?, ?>> instructionClass,
-				boolean enableCache) {
-
-			super(requireDataNames, requireDataTypes, produceDataName, instructionClass);
-
-			if (enableCache) {
-				pool = new ArrayList<Instruction<?, ?>>();
+		
+		if (LOG.isTraceEnabled()) {
+			for (InstructionClassNode n : instructionClassMap.values()) {
+				LOG.trace(n.getInstructionClass().getName() + " State=" + n.getState());
 			}
-			
-			issuedNum = new AtomicInteger(0);
+			LOG.trace("Resolved Instruction: " + (instruction == null ? null : instruction.getClass().getName()));
 		}
 
-		public void returnInstruction(Instruction<?, ?> instruction) {
-
-			issuedNum.decrementAndGet();
-
-			if (pool == null) {
-				return;
-			}
-
-			synchronized (pool) {
-				pool.add(instruction);
-			}
-		}
-
-		@Override
-		public Instruction<?, ?> getInstructionInstance(
-				ToolResolver toolResolver) {
-
-			issuedNum.incrementAndGet();
-
-			if (pool == null || pool.size() <= 0) {
-				return super.getInstructionInstance(toolResolver);
-			}
-
-			synchronized (pool) {
-				return pool.get(0);
-			}
-		}
+		return instruction;
 	}
 }
