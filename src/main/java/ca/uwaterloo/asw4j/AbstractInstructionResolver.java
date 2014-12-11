@@ -54,7 +54,11 @@ public abstract class AbstractInstructionResolver implements
 		return enablePooling;
 	}
 
-	protected InstructionClassNode getInstructionClassNode(
+	public int numberOfRegisteredInstruction() {
+		return instructionClassMap.size();
+	}
+
+	public InstructionClassNode getInstructionClassNode(
 			Instruction<?, ?> instruction) {
 		return instructionClassMap.get(instruction.getClass());
 	}
