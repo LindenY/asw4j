@@ -1,4 +1,4 @@
-package ca.uwaterlo.asw4j.unitTest;
+package ca.uwaterloo.asw4j.unitTest;
 
 import java.util.Date;
 

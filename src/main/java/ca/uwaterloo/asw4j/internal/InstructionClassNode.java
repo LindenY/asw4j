@@ -14,8 +14,7 @@ import ca.uwaterloo.asw4j.reflection.TypeToken;
 
 /**
  * <p>
- * A helper class which implements {@link InstructionClassInfo} and
- * {@link InstructionClassOmitter} to provide some useful functions for working
+ * A helper class that provides useful functions for working
  * with {@link Instruction} class.
  * </p>
  * 
