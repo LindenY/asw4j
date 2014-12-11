@@ -4,10 +4,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import ca.uwaterloo.asw4j.Balancer;
 import ca.uwaterloo.asw4j.Combiner;
-import ca.uwaterloo.asw4j.DataManipulationRegister;
 import ca.uwaterloo.asw4j.reflection.TypeToken;
 
-public class DataManipulationObjectMap implements DataManipulationRegister {
+public class DataManipulationObjectMap {
 	
 	private ConcurrentHashMap<TypeToken<?>, Combiner<?>> combiners;
 	private ConcurrentHashMap<TypeToken<?>, Balancer<?>> balancers;

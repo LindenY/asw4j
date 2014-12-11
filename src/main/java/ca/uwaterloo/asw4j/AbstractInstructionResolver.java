@@ -5,27 +5,26 @@ import java.util.concurrent.ConcurrentHashMap;
 import ca.uwaterloo.asw4j.internal.InstructionClassNode;
 
 public abstract class AbstractInstructionResolver implements
-		InstructionResolver, InstructionClassRegister {
+		InstructionResolver {
 
 	protected final boolean enablePooling;
-	
-	protected ConcurrentHashMap<Class<? extends Instruction<?, ?>>, InstructionClassNode>
-		instructionClassMap;
-	
+
+	protected ConcurrentHashMap<Class<? extends Instruction<?, ?>>, InstructionClassNode> instructionClassMap;
+
 	protected ToolResolver toolResolver;
 	protected DataStore dataStore;
-	
+
 	public AbstractInstructionResolver(DataStore dataStore,
 			ToolResolver toolResolver, boolean enablePooling) {
 		this.toolResolver = toolResolver;
 		this.dataStore = dataStore;
 		this.enablePooling = enablePooling;
-		
-		instructionClassMap = 
-				new ConcurrentHashMap<Class<? extends Instruction<?, ?>>, InstructionClassNode>();
+
+		instructionClassMap = new ConcurrentHashMap<Class<? extends Instruction<?, ?>>, InstructionClassNode>();
 	}
 
-	public void afterInstructionExecution(Instruction<?, ?> instruction, Throwable throwed) {
+	public void afterInstructionExecution(Instruction<?, ?> instruction,
+			Throwable throwed) {
 		InstructionClassNode node = getInstructionClassNode(instruction);
 		if (node != null) {
 			node.returnInstanceOfInstruction(instruction);
@@ -50,17 +49,18 @@ public abstract class AbstractInstructionResolver implements
 	public void setToolResolver(ToolResolver toolResolver) {
 		this.toolResolver = toolResolver;
 	}
-	
+
 	public boolean isPoolingEnabled() {
 		return enablePooling;
 	}
-	
-	protected InstructionClassNode getInstructionClassNode(Instruction<?, ?> instruction) {
+
+	protected InstructionClassNode getInstructionClassNode(
+			Instruction<?, ?> instruction) {
 		return instructionClassMap.get(instruction.getClass());
 	}
-	
+
 	protected void putIntructionClassNode(InstructionClassNode instructionNode) {
-		instructionClassMap.put(instructionNode.getInstructionClass(), instructionNode);
+		instructionClassMap.put(instructionNode.getInstructionClass(),
+				instructionNode);
 	}
 }
-

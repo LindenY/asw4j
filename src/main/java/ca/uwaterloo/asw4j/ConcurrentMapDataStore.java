@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import ca.uwaterloo.asw4j.internal.DataManipulationObjectMap;
 import ca.uwaterloo.asw4j.reflection.TypeToken;
 
-public class ConcurrentMapDataStore extends AbstractDataStore {
+public class ConcurrentMapDataStore implements DataStore {
 
 	private ConcurrentHashMap<TypeToken<?>, List<Object>> concurrentMap;
 	private DataManipulationObjectMap manipulationObjectMap;

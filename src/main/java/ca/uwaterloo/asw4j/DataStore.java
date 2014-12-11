@@ -43,4 +43,8 @@ public interface DataStore {
 	public Collection<List<Object>> values();
 	
 	public <T> T combineAndGet(TypeToken<T> typeToken);
+	
+	public void registerBalancer(TypeToken<?> typeToken, Balancer<?> balancer);
+	
+	public void registerCombiner(TypeToken<?> typeToken, Combiner<?> combiner);
 }

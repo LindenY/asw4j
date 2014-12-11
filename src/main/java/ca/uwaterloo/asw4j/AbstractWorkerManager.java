@@ -4,13 +4,12 @@ import java.lang.reflect.Type;
 
 import ca.uwaterloo.asw4j.reflection.TypeToken;
 
-public abstract class AbstractWorkerManager<T> implements WorkerManager<T>,
-		InstructionClassRegister, DataManipulationRegister {
+public abstract class AbstractWorkerManager<T> implements WorkerManager<T> {
 
-	protected AbstractDataStore dataStore;
+	protected DataStore dataStore;
 	protected AbstractInstructionResolver instructionResolver;
 
-	public AbstractWorkerManager(AbstractDataStore dataStore,
+	public AbstractWorkerManager(DataStore dataStore,
 			AbstractInstructionResolver instructionResolver) {
 		this.dataStore = dataStore;
 		this.instructionResolver = instructionResolver;
@@ -24,7 +23,7 @@ public abstract class AbstractWorkerManager<T> implements WorkerManager<T>,
 		return instructionResolver;
 	}
 
-	public void setDataStore(AbstractDataStore dataStore) {
+	public void setDataStore(DataStore dataStore) {
 		this.dataStore = dataStore;
 	}
 
@@ -33,13 +32,11 @@ public abstract class AbstractWorkerManager<T> implements WorkerManager<T>,
 		this.instructionResolver = instructionResolver;
 	}
 
-	public void registerBalancer(TypeToken<?> typeToken,
-			Balancer<?> balancer) {
+	public void registerBalancer(TypeToken<?> typeToken, Balancer<?> balancer) {
 		dataStore.registerBalancer(typeToken, balancer);
 	}
 
-	public void registerCombiner(TypeToken<?> typeToken,
-			Combiner<?> combiner) {
+	public void registerCombiner(TypeToken<?> typeToken, Combiner<?> combiner) {
 		dataStore.registerCombiner(typeToken, combiner);
 	}
 
@@ -79,7 +76,7 @@ public abstract class AbstractWorkerManager<T> implements WorkerManager<T>,
 		instructionResolver.registerInstructionClass(instructionClass,
 				requireDataNames, requireDataTypes, produceDataName);
 	}
-	
+
 	public void registerInstructionClass(
 			Class<? extends Instruction<?, ?>> instructionClass,
 			String[] requireDataNames, Type[] requireDataTypes,
@@ -92,7 +89,5 @@ public abstract class AbstractWorkerManager<T> implements WorkerManager<T>,
 	public int numberOfRegisteredInstruction() {
 		return instructionResolver.numberOfRegisteredInstruction();
 	}
-	
-	
 
 }
