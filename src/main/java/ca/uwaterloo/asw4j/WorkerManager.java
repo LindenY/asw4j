@@ -7,19 +7,9 @@ public interface WorkerManager {
 	
 	public STATE getState();
 	
-	public void awaitShutDown(int timeOut) throws InterruptedException;
-	
-	public void shutDown();
-	
-	public void shutDownNow();
-	
 	public <T> Future<T> asyncStart(Class<T> type, String name);
 	
 	public <T> T start(Class<T> type, String name);
-	
-	public void setExceptionHandlePolicy(ExceptionHandlePolicy policy);
-	
-	public ExceptionHandlePolicy getExceptionHandlePolicy();
 	
 	
 	public int numberOfRegisteredInstruction();
@@ -45,17 +35,11 @@ public interface WorkerManager {
 			String[] requireDataNames, Type[] requireDataTypes,
 			String produceDataName,
 			boolean supportSingleton);
-
-	
-	public static enum ExceptionHandlePolicy {
-		BlockInstructionAndRun,
-		BlockInstructionPrintTraceAndRun,
-		Terminate
-	}
 	
 	public static enum STATE {
 		Ready,
-		Canceled,
+		Running,
+		Cancelled,
 		TerminatedByException,
 		Finished
 	}
