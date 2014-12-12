@@ -1,6 +1,5 @@
 package ca.uwaterloo.asw4j;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
@@ -13,6 +12,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.uwaterloo.asw4j.reflection.TypeToken;
+
 public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 
 	private static final Logger LOG = LoggerFactory
@@ -20,104 +21,116 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 
 	private int coreNumWorkers;
 	private int maxNumWorkers;
-	
-	private volatile Object result;
-	private volatile boolean waiting;
-	
+
 	private ThreadPool threadPool;
-	
+
 	private AtomicLong allJobsTime;
-	
-	
-	public ThreadPoolWorkerManager(
-			int coreNumWorkers, 
-			int maxNumWorkers,
+	private boolean waiting;
+	private long startTime;
+
+	public ThreadPoolWorkerManager(int coreNumWorkers, int maxNumWorkers,
 			DataStore dataStore) {
 
-		this(coreNumWorkers, maxNumWorkers, 30, new SimpleInstructionResolver(dataStore));
+		this(coreNumWorkers, maxNumWorkers, 30, new SimpleInstructionResolver(
+				dataStore));
 	}
 
-	public ThreadPoolWorkerManager(
-									int coreNumWorkers, 
-									int maxNumWorkers,
-									InstructionResolver instructionResolver ) {
+	public ThreadPoolWorkerManager(int coreNumWorkers, int maxNumWorkers,
+			InstructionResolver instructionResolver) {
 
 		this(coreNumWorkers, maxNumWorkers, 30, instructionResolver);
 	}
-	
-	public ThreadPoolWorkerManager(
-									int coreNumWorkers, 
-									int maxNumWorkers,
-									int maxQueueNum,
-									InstructionResolver instructionResolver ) {
-		
+
+	public ThreadPoolWorkerManager(int coreNumWorkers, int maxNumWorkers,
+			int maxQueueNum, InstructionResolver instructionResolver) {
+
 		super(instructionResolver);
 
-		BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(maxQueueNum);
-		
-		threadPool = new ThreadPool (
-				coreNumWorkers, 
-				maxNumWorkers, 
-				10, TimeUnit.SECONDS, 
-				workQueue, 
-				this );
-		
+		BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(
+				maxQueueNum);
+
+		threadPool = new ThreadPool(coreNumWorkers, maxNumWorkers, 10,
+				TimeUnit.SECONDS, workQueue, this);
+
 		waiting = false;
 	}
 
 	public <T> Future<T> asyncStart(Class<T> type, String name) {
-		// TODO Auto-generated method stub
-		return null;
+		startExecution();
+		return new FutureTask<T>(this, TypeToken.get(type, name)) {};
 	}
 
 	public <T> T start(Class<T> type, String name) {
-		// TODO Auto-generated method stub
-		return null;
+		T result = null;
+		try {
+			result = asyncStart(type, name).get();
+		} catch (InterruptedException e) {
+		} catch (ExecutionException e) {
+			if (LOG.isDebugEnabled()) {
+				e.printStackTrace();
+			}
+		}
+		return result;
 	}
 
-	public void shutDown() {
-	}
 
-	public void shutDownNow() {
-	}
+	private void startExecution() {
 
-	public void awaitShutDown(int timeOut) throws InterruptedException {
-	}
-	
-	private void execute() {
-		allJobsTime = new AtomicLong(0);
-		
-		Long startTime = null;
 		if (LOG.isDebugEnabled()) {
-			LOG.debug(
-				String.format(
-					"WorkerManager starts working with " + 
-					"%d core workers, %d max workers, " + 
-					"%d registered instruction classses " +
-					"and %d data objects.",
-					coreNumWorkers,
-					maxNumWorkers,
+			LOG.debug(String.format("WorkerManager starts working with "
+					+ "%d core workers, %d max workers, "
+					+ "%d registered instruction classses "
+					+ "and %d data objects.", coreNumWorkers, maxNumWorkers,
 					instructionResolver.numberOfRegisteredInstruction(),
 					instructionResolver.getDataStore().size()));
-			
+
 			startTime = System.currentTimeMillis();
+			allJobsTime = new AtomicLong(0);
 		}
+
+		state = STATE.Running;
 		
 		if (threadPool.resolveInstructions() == 0) {
-			
-		}
-		
-		if (LOG.isDebugEnabled()) {
-			long t = allJobsTime.get();
-			LOG.debug(
-					String.format(
-							"WorkManager finishes with %d jobs complete with duration of %d millis and all jobs time of %d millis.",
-							threadPool.getCompletedTaskCount(),
-							System.currentTimeMillis() - startTime,
-							t));
+			finishExecution();
 		}
 	}
-	
+
+	private void cancelExecution(boolean mayInterruptIfRunning) {
+		
+		if (mayInterruptIfRunning) {
+			threadPool.shutdownNow();
+		} else {
+			threadPool.shutdown();
+		}
+		
+		if (waiting) {
+			synchronized (this) {
+				this.notify();
+			}
+		}
+		state = STATE.Cancelled;
+	}
+
+	private void finishExecution() {
+		if (waiting) {
+			synchronized (this) {
+				this.notify();
+			}
+		}
+		
+		if (!threadPool.isShutdown()) {
+			state = STATE.Finished;
+		}
+
+		if (LOG.isDebugEnabled()) {
+			long t = allJobsTime.get();
+			LOG.debug(String
+					.format("WorkManager finishes with %d jobs complete with duration of %d millis and all jobs time of %d millis.",
+							threadPool.getCompletedTaskCount(),
+							System.currentTimeMillis() - startTime, t));
+		}
+	}
+
 	private class ThreadPool extends ThreadPoolExecutor {
 
 		private ThreadPoolWorkerManager workerManager;
@@ -132,15 +145,12 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 
 		@Override
 		protected void beforeExecute(Thread t, Runnable r) {
-			
+
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(
-					String.format(
-						"%s starts to run on thread %s",
-						r.getClass().getName(),
-						t.getName()));
+				LOG.trace(String.format("%s starts to run on thread %s", r
+						.getClass().getName(), t.getName()));
 			}
-			
+
 			instructionResolver
 					.beforInstructionExecution((Instruction<?, ?>) r);
 			super.beforeExecute(t, r);
@@ -148,62 +158,123 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 
 		@Override
 		protected void afterExecute(Runnable r, Throwable t) {
-			
+
 			Instruction<?, ?> finishedInstruction = (Instruction<?, ?>) r;
-			
+
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(
-					String.format("%s finished run with duration %d.", 
-							finishedInstruction.getClass().getName(),
-							finishedInstruction.getDuration()));
+				LOG.trace(String.format("%s finished run with duration %d.",
+						finishedInstruction.getClass().getName(),
+						finishedInstruction.getDuration()));
 			}
 
-			if (finishedInstruction.getDuration() != null && finishedInstruction.getDuration() >= 0) {
-				workerManager.allJobsTime.addAndGet(finishedInstruction.getDuration());
+			if (LOG.isDebugEnabled()) {
+				if (finishedInstruction.getDuration() != null
+						&& finishedInstruction.getDuration() >= 0) {
+					workerManager.allJobsTime.addAndGet(finishedInstruction
+							.getDuration());
+				}
 			}
-			instructionResolver.afterInstructionExecution(finishedInstruction, t);
 			
-			
-			if (!addInstructionToExecutionQueue()) {
+			instructionResolver.afterInstructionExecution(finishedInstruction,
+					t);
+
+			if (resolveInstructions() == 0 || isShutdown()) {
 				if (getActiveCount() <= 1 && getQueue().size() <= 0) {
-					synchronized (workerManager) {
-						workerManager.notify();
-					}
+					workerManager.finishExecution();
 				}
 			}
 			super.afterExecute(r, t);
 		}
-		
+
 		public int resolveInstructions() {
-			
+
 			Instruction<?, ?> instruction = null;
 			int count = 0;
-			for (int i=0; i<threadPool.getQueue().remainingCapacity(); i++) {
+			for (int i = 0; i < threadPool.getQueue().remainingCapacity(); i++) {
 				try {
 					instruction = instructionResolver.resolveInstruction();
-				} catch (Exception e){
-					shutDownNow();
+				} catch (Exception e) {
+					shutdownNow();
+					state = STATE.TerminatedByException;
 					return 0;
 				}
 				if (instruction == null) {
 					break;
 				}
-				
+
 				threadPool.execute(instruction);
-				count ++;
+				count++;
 			}
-			
+
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(
-					String.format(
-						"%d active workers, %d instructions in queue, %d capacity remain, %d instructions added.",
-							threadPool.getActiveCount(),
-							threadPool.getQueue().size(),
-							threadPool.getQueue().remainingCapacity(),
-							count));
+				LOG.trace(String
+						.format("%d active workers, %d instructions in queue, %d capacity remain, %d instructions added.",
+								threadPool.getActiveCount(), threadPool
+										.getQueue().size(), threadPool
+										.getQueue().remainingCapacity(), count));
 			}
-			
+
 			return count;
 		}
+	}
+
+	private abstract class FutureTask<T> implements Future<T> {
+
+		private WorkerManager workerManager;
+		private TypeToken<?> resultTypeToken;
+		
+		public FutureTask(WorkerManager workerManager, TypeToken<?> resultTypeToken) {
+			this.workerManager = workerManager;
+			this.resultTypeToken = resultTypeToken;
+		}
+		
+		public boolean cancel(boolean mayInterruptIfRunning) {
+			cancelExecution(mayInterruptIfRunning);
+			return true;
+		}
+
+		public boolean isCancelled() {
+			if (getState() == STATE.Cancelled) {
+				return true;
+			}
+			return false;
+		}
+
+		public boolean isDone() {
+			if (getState() != STATE.Ready 
+					&& getState() != STATE.Running) {
+				return true;
+			}
+			return false;
+		}
+
+		@SuppressWarnings({ "unchecked", "finally" })
+		public T get() throws InterruptedException, ExecutionException {
+			T result = null;
+			if (state == STATE.Running) {
+				try {
+					synchronized (workerManager) {
+						waiting = true;
+						workerManager.wait();
+					}
+				} catch (InterruptedException e) {
+					if (state == STATE.Finished) {
+						result = (T) instructionResolver.getDataStore().combineAndGet(resultTypeToken);
+						return result;
+					}
+				} finally {
+					throw new InterruptedException();
+				}
+			}
+			
+			return result;
+		}
+
+		public T get(long timeout, TimeUnit unit) throws InterruptedException,
+				ExecutionException, TimeoutException {
+			threadPool.awaitTermination(timeout, unit);
+			return get();
+		}
+		
 	}
 }
