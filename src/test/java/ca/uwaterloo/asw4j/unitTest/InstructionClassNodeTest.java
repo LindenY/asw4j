@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.swing.text.html.HTMLDocument.Iterator;
-
 import org.junit.Test;
 
 import ca.uwaterloo.asw4j.Instruction;
@@ -41,23 +39,56 @@ public class InstructionClassNodeTest {
 			Instruction0.class, null, new Class<?>[] {String.class}, 
 			null, Date.class, false, false);
 	
-	
 	String[] requireDateNames1 = {"Hello", " ", "World"};
 	InstructionClassNode node1 = new InstructionClassNode(
-			Instruction1.class, requireDateNames1, new Class<?>[] {String.class, String.class, String.class}, 
+			Instruction1.class, requireDateNames1, 
+			new Class<?>[] {String.class, String.class, String.class}, 
 			"Hello World", String.class, true, false);
 	
 	@Test
 	public void testConstructorWithLegalParameters() {
 		
+		assertTrue(node0.getInstructionClass().equals(Instruction0.class));
 		assertFalse(node0.isSupportSingleton());
-		assertTrue(node1.isSupportSingleton());
 		
+		assertTrue(node1.getInstructionClass().equals(Instruction1.class));
+		assertTrue(node1.isSupportSingleton());
 	}
 	
-	@Test
-	public void testConstructorWithIllegalParameters() {
+	@Test(expected = IllegalArgumentException.class)
+	public void testConstructorWithNullRequireDataTypes() {
 		
+		new InstructionClassNode(Instruction0.class, null, 
+				null, null, Date.class, false, false);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testConstructorWithEmptyRequireDataTypes() {
+		
+		new InstructionClassNode(Instruction0.class, null, 
+				new Class<?>[] {}, null, Date.class, false, false);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testConstructorWithNullRequireDataNamesAndTypesGreaterThanOne() {
+		
+		new InstructionClassNode(Instruction0.class, null, 
+				new Class<?>[] {String.class, Date.class}, null, Date.class, true, true);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testConstructorWithDifferentLengthInRequireDataNamesAndTypes() {
+		
+		new InstructionClassNode(Instruction1.class, requireDateNames1, 
+				new Class<?>[] {String.class, String.class}, 
+				"Hello World", String.class, true, false);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testConstructorWithNullProduceDataType() {
+		
+		new InstructionClassNode(Instruction0.class, null, 
+				new Class<?>[] {String.class}, null, null, false, false);
 	}
 
 	@Test
