@@ -5,7 +5,6 @@ import java.lang.reflect.Type;
 public abstract class AbstractWorkerManager implements WorkerManager {
 
 	protected InstructionResolver instructionResolver;
-	protected ExceptionHandlePolicy exceptionHandlePolicy;
 	protected volatile STATE state;
 
 	public AbstractWorkerManager(InstructionResolver instructionResolver) {
@@ -19,14 +18,6 @@ public abstract class AbstractWorkerManager implements WorkerManager {
 	public void setInstructionResolver(
 			AbstractInstructionResolver instructionResolver) {
 		this.instructionResolver = instructionResolver;
-	}
-	
-	public ExceptionHandlePolicy getExceptionHandlePolicy() {
-		return exceptionHandlePolicy;
-	}
-
-	public void setExceptionHandlePolicy(ExceptionHandlePolicy exceptionHandlePolicy) {
-		this.exceptionHandlePolicy = exceptionHandlePolicy;
 	}
 	
 	public STATE getState() {
