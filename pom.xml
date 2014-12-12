@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>ca.uwaterloo</groupId>
-	<version>1.0.0-Beta</version>
+	<version>0.1.0-Beta</version>
 	<artifactId>asw</artifactId>
 	<packaging>jar</packaging>
 
