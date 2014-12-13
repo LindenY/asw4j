@@ -3,11 +3,33 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>ca.uwaterloo</groupId>
-	<version>0.1.1-Beta</version>
-	<artifactId>asw</artifactId>
+	<version>1.0.0-Beta</version>
+	<artifactId>asw4j</artifactId>
 	<packaging>jar</packaging>
 
-	<name>amr</name>
+	<name>Auto Spread Work for Java</name>
+	<url>https://github.com/LindenY/asw4j</url>
+	<description>asw4j(Auto Spread Work for Java) is a Java library aiming to take advantage of multi-core processors and remove the difficulty of the concurrent programming.</description>
+	
+	<scm>
+		<url>https://github.com/LindenY/asw4j</url>
+		<connection>https://github.com/LindenY/asw4j.git</connection>
+		<developerConnection>Desmond Lin</developerConnection>
+	</scm>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Desmond Lin</name>
+			<email>desmond.zq.lin@gmail.com</email>
+		</developer>
+	</developers>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,7 +42,7 @@
 			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

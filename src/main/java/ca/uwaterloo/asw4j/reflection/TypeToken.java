@@ -1,4 +1,4 @@
-package ca.uwaterloo.asw.reflection;
+package ca.uwaterloo.asw4j.reflection;
 
 import java.lang.reflect.Type;
 

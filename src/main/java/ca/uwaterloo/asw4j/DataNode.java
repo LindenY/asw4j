@@ -1,11 +1,11 @@
-package ca.uwaterloo.asw;
+package ca.uwaterloo.asw4j;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ca.uwaterloo.asw.reflection.TypeToken;
+import ca.uwaterloo.asw4j.reflection.TypeToken;
 
 public class DataNode {
 

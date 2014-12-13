@@ -1,4 +1,4 @@
-package ca.uwaterloo.asw;
+package ca.uwaterloo.asw4j;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,15 +9,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import ca.uwaterloo.asw.reflection.TypeToken;
+import ca.uwaterloo.asw4j.internal.DataManipulationObjectMap;
+import ca.uwaterloo.asw4j.reflection.TypeToken;
 
 public class ConcurrentMapDataStore implements DataStore {
 
 	private ConcurrentHashMap<TypeToken<?>, List<Object>> concurrentMap;
+	private DataManipulationObjectMap manipulationObjectMap;
+	
 	private volatile int size;
 
 	public ConcurrentMapDataStore() {
 		concurrentMap = new ConcurrentHashMap<TypeToken<?>, List<Object>>();
+		manipulationObjectMap = new DataManipulationObjectMap();
 		size = 0;
 	}
 
@@ -50,6 +54,14 @@ public class ConcurrentMapDataStore implements DataStore {
 		}
 	}
 
+	public boolean contain(Class<?> type) {
+		return contain(TypeToken.get(type));
+	}
+
+	public boolean contain(Class<?> type, String name) {
+		return contain(TypeToken.get(type, name));
+	}
+
 	/**
 	 * NOTE: This method is not encouraged to be used, because right now it uses
 	 * normal {@link ArrayList} to store the objects and {@link ArrayList} does
@@ -73,14 +85,6 @@ public class ConcurrentMapDataStore implements DataStore {
 		synchronized (objs) {
 			return objs.contains(obj);
 		}
-	}
-
-	public boolean contain(Class<?> type) {
-		return contain(TypeToken.get(type));
-	}
-
-	public boolean contain(Class<?> type, String name) {
-		return contain(TypeToken.get(type, name));
 	}
 
 	public boolean contain(TypeToken<?> typeToken) {
@@ -117,6 +121,30 @@ public class ConcurrentMapDataStore implements DataStore {
 		return true;
 	}
 
+	public Map<TypeToken<?>, List<Object>> getAllValues() {
+		Map<TypeToken<?>, List<Object>> resultMap = new HashMap<TypeToken<?>, List<Object>>();
+		for (TypeToken<?> tk : concurrentMap.keySet()) {
+			List<Object> objs = concurrentMap.get(tk);
+			if (objs.size() > 0) {
+				resultMap.put(tk, objs);
+			}
+		}
+		return resultMap;
+	}
+
+	public <T> List<T> getAllValues(Class<T> type) {
+		return getAllValues(type, null);
+	}
+
+	public <T> List<T> getAllValues(Class<T> type, String name) {
+		return getAllValues(TypeToken.get(type, name));
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> List<T> getAllValues(TypeToken<T> typeToken) {
+		return (List<T>) concurrentMap.get(typeToken);
+	}
+
 	public <T> T getAndRemove(Class<T> type) {
 		return getAndRemove(TypeToken.get(type));
 	}
@@ -127,6 +155,9 @@ public class ConcurrentMapDataStore implements DataStore {
 
 	@SuppressWarnings("unchecked")
 	public <T> T getAndRemove(TypeToken<T> typeToken) {
+		
+		combine(typeToken);
+		balance(typeToken);
 
 		List<Object> objs = concurrentMap.get(typeToken);
 
@@ -155,44 +186,82 @@ public class ConcurrentMapDataStore implements DataStore {
 		return dataNode;
 	}
 
-	public <T> List<T> getAllValues(Class<T> type) {
-		return getAllValues(type, null);
-	}
-
-	public <T> List<T> getAllValues(Class<T> type, String name) {
-		return getAllValues(TypeToken.get(type, name));
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T> List<T> getAllValues(TypeToken<T> typeToken) {
-		return (List<T>) concurrentMap.get(typeToken);
-	}
-
-	public Map<TypeToken<?>, List<Object>> getAllValues() {
-		Map<TypeToken<?>, List<Object>> resultMap = new HashMap<TypeToken<?>, List<Object>>();
-		for (TypeToken<?> tk : concurrentMap.keySet()) {
-			List<Object> objs = concurrentMap.get(tk);
-			if (objs.size() > 0) {
-				resultMap.put(tk, objs);
-			}
-		}
-		return resultMap;
-	}
-
 	public Set<TypeToken<?>> keySet() {
 		return concurrentMap.keySet();
-	}
-
-	public Collection<List<Object>> values() {
-		return concurrentMap.values();
 	}
 
 	public int size() {
 		return size;
 	}
-	
-	
-	
-	
 
+	public Collection<List<Object>> values() {
+		return concurrentMap.values();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T> T combineAndGet(TypeToken<T> typeToken) {
+		List<T> objs = (List<T>) concurrentMap.get(typeToken);
+		
+		if (objs == null || objs.size() <= 0) {
+			return null;
+		}
+		
+		combine(typeToken);
+		
+		return objs.get(0);
+	}
+
+	public void registerBalancer(TypeToken<?> typeToken,
+			Balancer<?> balancer) {
+		manipulationObjectMap.registerBalancer(typeToken, balancer);
+	}
+
+	public void registerCombiner(TypeToken<?> typeToken,
+			Combiner<?> combiner) {
+		manipulationObjectMap.registerCombiner(typeToken, combiner);
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private boolean combine(TypeToken<?> typeToken) {
+		List<Object> objs = concurrentMap.get(typeToken);
+	
+		if (objs == null || objs.size() <= 0) {
+			return false;
+		}
+		
+		Combiner<?> combiner = manipulationObjectMap.getCombiner(typeToken);
+		if (combiner == null) {
+			return false;
+		}
+		
+		synchronized (objs) {
+			Object obj = combiner.combine((Collection) objs);
+			objs.clear();
+			objs.add(obj);
+		}
+		
+		return true;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked"})
+	private boolean balance(TypeToken<?> typeToken) {
+		List<Object> objs = concurrentMap.get(typeToken);
+		
+		if (objs == null || objs.size() <= 0) {
+			return false;
+		}
+		
+		Balancer<?> balancer = manipulationObjectMap.getBalancer(typeToken);
+		if (balancer == null) {
+			return false;
+		}
+		
+		synchronized (objs) {
+			Collection balanced = balancer.balance((Collection) objs);
+			objs.clear();
+			objs.addAll(balanced);
+		}
+		
+		return true;
+	}
 }

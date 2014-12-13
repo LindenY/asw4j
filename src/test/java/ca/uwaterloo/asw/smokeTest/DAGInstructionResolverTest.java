@@ -1,23 +1,22 @@
 package ca.uwaterloo.asw.smokeTest;
 
 import java.lang.IllegalArgumentException;
-
 import java.util.Date;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import ca.uwaterloo.asw.ConcurrentMapDataStore;
-import ca.uwaterloo.asw.DAGInstructionResolver;
-import ca.uwaterloo.asw.DataStore;
-import ca.uwaterloo.asw.Instruction;
-import ca.uwaterloo.asw.InstructionResolver;
-import ca.uwaterloo.asw.ToolResolver;
 import ca.uwaterloo.asw.testObjects.TestInstructionWithoutDependency.InstructionWithoutAnnotation;
 import ca.uwaterloo.asw.testObjects.TestInstructionWithoutDependency.InstructionWithAnnotation;
 import ca.uwaterloo.asw.testObjects.TestInstructionWithoutDependency.InstructionWithIncorrectRequireType;
 import ca.uwaterloo.asw.testObjects.TestInstructionWithTreeDependency.TreeRootInstruction;
+import ca.uwaterloo.asw4j.ConcurrentMapDataStore;
+import ca.uwaterloo.asw4j.DAGInstructionResolver;
+import ca.uwaterloo.asw4j.DataStore;
+import ca.uwaterloo.asw4j.Instruction;
+import ca.uwaterloo.asw4j.InstructionResolver;
+import ca.uwaterloo.asw4j.ToolResolver;
 
 public class DAGInstructionResolverTest {
 

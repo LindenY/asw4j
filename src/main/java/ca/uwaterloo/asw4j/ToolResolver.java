@@ -1,4 +1,4 @@
-package ca.uwaterloo.asw;
+package ca.uwaterloo.asw4j;
 
 public interface ToolResolver {
 	

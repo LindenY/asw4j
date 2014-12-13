@@ -1,12 +1,11 @@
-package ca.uwaterloo.asw;
+package ca.uwaterloo.asw4j;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ca.uwaterloo.asw.DataNode;
-import ca.uwaterloo.asw.reflection.TypeToken;
+import ca.uwaterloo.asw4j.reflection.TypeToken;
 
 public interface DataStore {
 
@@ -18,13 +17,15 @@ public interface DataStore {
 	
 	public void addAll(List<?> objs, String name);
 
-	public boolean contain(Object obj);
-
 	public boolean contain(Class<?> type);
+
+	public boolean contain(Object obj);
 
 	public boolean contain(TypeToken<?> typeToken);
 	
 	public boolean containAll(List<TypeToken<?>> typeTokens);
+	
+	public Map<TypeToken<?>, List<Object>> getAllValues();
 	
 	public <T> T getAndRemove(Class<T> type);
 	
@@ -33,19 +34,16 @@ public interface DataStore {
 	public <T> T getAndRemove(TypeToken<T> typeToken);
 	
 	public DataNode getAndRemoveAll(List<TypeToken<?>> typeTokens);
-
-	public <T> List<T> getAllValues(Class<T> type);
-	
-	public <T> List<T> getAllValues(Class<T> type, String name);
-	
-	public <T> List<T> getAllValues(TypeToken<T> typeToken);
-	
-	public Map<TypeToken<?>, List<Object>> getAllValues();
 	
 	public Set<TypeToken<?>> keySet();
 	
-	public Collection<List<Object>> values();
-	
 	public int size();
 	
+	public Collection<List<Object>> values();
+	
+	public <T> T combineAndGet(TypeToken<T> typeToken);
+	
+	public void registerBalancer(TypeToken<?> typeToken, Balancer<?> balancer);
+	
+	public void registerCombiner(TypeToken<?> typeToken, Combiner<?> combiner);
 }

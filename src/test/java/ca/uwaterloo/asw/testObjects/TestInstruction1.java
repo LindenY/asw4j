@@ -1,8 +1,8 @@
 package ca.uwaterloo.asw.testObjects;
 
-import ca.uwaterloo.asw.DataNode;
-import ca.uwaterloo.asw.Instruction;
-import ca.uwaterloo.asw.ToolResolver;
+import ca.uwaterloo.asw4j.DataNode;
+import ca.uwaterloo.asw4j.Instruction;
+import ca.uwaterloo.asw4j.ToolResolver;
 
 public class TestInstruction1 extends Instruction<DataNode, Long> {
 
