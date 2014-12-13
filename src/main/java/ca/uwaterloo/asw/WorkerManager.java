@@ -1,28 +1,27 @@
 package ca.uwaterloo.asw;
 
+import ca.uwaterloo.asw.internal.InstructionNode;
+
 public abstract class WorkerManager<T> {
 
 	protected int coreNumWorkers;
 	protected int maxNumWorkers;
 	
 	protected ToolResolver toolResolver;
-	protected Combiner<T> combiner;
-	protected DataNodeStore dataNodeStore;
+	protected DataStore dataStore;
 	protected InstructionResolver instructionResolver;
 	
 	public WorkerManager(int coreNumWorkers,
 						 int maxNumWorkers,
 						 ToolResolver toolResolver,
-						 Combiner<T> combiner,
-						 DataNodeStore dataNodeStore,
+						 DataStore dataNodeStore,
 						 InstructionResolver instructionResolver) {
 		
 		this.coreNumWorkers = coreNumWorkers;
 		this.maxNumWorkers = maxNumWorkers;
 		
 		this.toolResolver = toolResolver;
-		this.combiner = combiner;
-		this.dataNodeStore = dataNodeStore;
+		this.dataStore = dataNodeStore;
 		this.instructionResolver = instructionResolver;
 	}
 
@@ -50,20 +49,12 @@ public abstract class WorkerManager<T> {
 		this.toolResolver = toolResolver;
 	}
 
-	public Combiner<T> getCombiner() {
-		return combiner;
+	public DataStore getDataNodeStore() {
+		return dataStore;
 	}
 
-	public void setCombiner(Combiner<T> combiner) {
-		this.combiner = combiner;
-	}
-
-	public DataNodeStore getDataNodeStore() {
-		return dataNodeStore;
-	}
-
-	public void setDataNodeStore(DataNodeStore dataNodeStore) {
-		this.dataNodeStore = dataNodeStore;
+	public void setDataNodeStore(DataStore dataStore) {
+		this.dataStore = dataStore;
 	}
 
 	public InstructionResolver getInstructionResolver() {
@@ -74,9 +65,17 @@ public abstract class WorkerManager<T> {
 		this.instructionResolver = instructionResolver;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public void addInstructionProduceDataToDataStore(
+			Instruction<?, ?> instruction) {
+		String produceDataName = InstructionNode
+				.getInstructionProduceDataName((Class<? extends Instruction<?, ?>>) instruction
+						.getClass());
+		dataStore.add(instruction.getResult(), produceDataName);
+	}
+	
 	abstract public T start();
 	abstract public void shutDown();
 	abstract public void shutDownNow();
 	abstract public void awaitShutDown(int timeOut) throws InterruptedException;
-	
 }

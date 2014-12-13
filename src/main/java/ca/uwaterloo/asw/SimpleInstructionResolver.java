@@ -1,132 +1,142 @@
 package ca.uwaterloo.asw;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import ca.uwaterloo.asw.DataNode.STAGE;
+import ca.uwaterloo.asw.internal.InstructionNode;
 
 public class SimpleInstructionResolver extends AbstractInstructionResolver {
 
-	private final static Logger LOG = LoggerFactory
-			.getLogger(SimpleInstructionResolver.class);
-
-	private Map<Class, String[]> classDependenciesMap = new HashMap<Class, String[]>();
+	private final boolean enableCache;
+	private final Map<Class<? extends Instruction<?, ?>>, SimpleInstructionNode> instructionNodeMap;
 
 	public SimpleInstructionResolver(ToolResolver toolResolver,
-			DataNodeStore dataNodeStore) {
-		super(toolResolver, dataNodeStore);
+			DataStore dataStore) {
+		this(toolResolver, dataStore, false);
 	}
 
-	public void registerInstruction(String[] requiredNames,
-			Class instructionClass) {
-		classDependenciesMap.put(instructionClass, requiredNames);
+	public SimpleInstructionResolver(ToolResolver toolResolver,
+			DataStore dataStore, boolean enableCache) {
+		super(toolResolver, dataStore);
+		this.enableCache = enableCache;
+		this.instructionNodeMap = new HashMap<Class<? extends Instruction<?, ?>>, SimpleInstructionNode>();
+	}
+
+	public boolean isEnableCache() {
+		return enableCache;
+	}
+
+	public void register(String[] requireDataNames,
+			Class<?>[] requireDataTypes, String produceDataName,
+			Class<?> produceDataType,
+			Class<? extends Instruction<?, ?>> instructionClass) {
+
+		instructionNodeMap.put(instructionClass, new SimpleInstructionNode(
+				requireDataNames, requireDataTypes, produceDataName,
+				produceDataType, instructionClass, enableCache));
+	}
+
+	public void register(Class<? extends Instruction<?, ?>> instructionClass) {
+
+		String[] requireDataNames = InstructionNode
+				.getInstructionRequireDataNames(instructionClass);
+		Class<?>[] requireDataTypes = InstructionNode
+				.getInstructionRequireDataTypes(instructionClass);
+		String produceDataName = InstructionNode
+				.getInstructionProduceDataName(instructionClass);
+		Class<?> produceDataType = InstructionNode
+				.getInstructionProduceDataType(instructionClass);
+
+		register(requireDataNames, requireDataTypes, produceDataName,
+				produceDataType, instructionClass);
 	}
 
 	public int numberOfRegisteredInstruction() {
-		return classDependenciesMap.keySet().size();
+		return instructionNodeMap.keySet().size();
 	}
 
-	public Instruction resolveInstruction() {
-		for (Class ic : classDependenciesMap.keySet()) {
-
-			String[] requiredName = classDependenciesMap.get(ic);
-			List<DataNode> requiredList = new ArrayList<DataNode>();
-			DataNode matched = null;
-
-			for (String name : requiredName) {
-				Iterator<DataNode> iterator = dataNodeStore
-						.iterator(STAGE.TRANSITIONAL);
-
-				while (iterator.hasNext()) {
-					DataNode next = iterator.next();
-					if (next.getName().equals(name)) {
-						
-						LOG.warn("found matched : " + name);
-						matched = next;
-						break;
-					}
-				}
-
-				if (matched == null) {
-					break;
-				} else {
-					requiredList.add(matched);
-					matched = null;
-				}
-			}
-
-			if (requiredList.size() == requiredName.length) {
-				return prepareInstructionClass(ic, requiredList);
-			}
-		}
-		return null;
-	}
-
-	public Instruction getInstruction(String[] dataNodeNames) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void beforInstructionExecution(Instruction instruction) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void afterInstructionExecution(Instruction instruction) {
-		// TODO Auto-generated method stub
-	}
-
-	private Instruction prepareInstructionClass(Class instructionClass,
-			List<DataNode> dataNodes) {
-
-		Instruction instruction = instantizeInstruction(instructionClass);
-
-		if (instruction == null) {
-			return null;
-		}
+	public Instruction<?, ?> resolveInstruction() {
 		
-		instruction.setToolbox(toolResolver);
+		Iterator<SimpleInstructionNode> iterator = instructionNodeMap.values()
+				.iterator();
+		while (iterator.hasNext()) {
 
-		DataNode[] toBeInjected = new DataNode[dataNodes.size()];
-		for (int i = 0; i < dataNodes.size(); i++) {
-			toBeInjected[i] = dataNodeStore.getAndRemove(dataNodes.get(i)
-					.getName(), STAGE.TRANSITIONAL);
+			SimpleInstructionNode nextIN = iterator.next();
 			
-			LOG.debug("DataStoreSize: " + dataNodeStore.getAllDataNodesWithStage(STAGE.TRANSITIONAL).size());
+			if (nextIN.isSupportSingleton() && nextIN.issuedNum.get() > 0) {
+				continue;
+			} else if (dataStore.containAll(nextIN.getRequireDatas())) {
+				DataNode requireData = dataStore.getAndRemoveAll(nextIN
+						.getRequireDatas());
+				Instruction<?, ?> instruction = nextIN
+						.getInstructionInstance(toolResolver);
+				instruction.setRequireData(requireData);
+				return instruction;
+			}
 		}
-		instruction.setRawDataNodes(toBeInjected);
-		return instruction;
+
+		return null;
 	}
 
-	private Instruction instantizeInstruction(Class instructionClass) {
-		Instruction instruction = null;
-		try {
-			Constructor<Instruction> contructor = instructionClass
-					.getDeclaredConstructor(null);
-			instruction = contructor.newInstance(null);
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		}
-		return instruction;
+	@Override
+	public void afterInstructionExecution(Instruction<?, ?> instruction) {
+		SimpleInstructionNode instructionNode = instructionNodeMap
+				.get(instruction.getClass());
+
+		instructionNode.returnInstruction(instruction);
 	}
 
+	private static class SimpleInstructionNode extends InstructionNode {
+
+		private List<Instruction<?, ?>> pool;
+		private AtomicInteger issuedNum;
+
+		public SimpleInstructionNode(String[] requireDataNames,
+				Class<?>[] requireDataTypes, String produceDataName,
+				Class<?> produceDataType,
+				Class<? extends Instruction<?, ?>> instructionClass,
+				boolean enableCache) {
+
+			super(requireDataNames, requireDataTypes, produceDataName,
+					produceDataType, instructionClass);
+
+			if (enableCache) {
+				pool = new ArrayList<Instruction<?, ?>>();
+			}
+			
+			issuedNum = new AtomicInteger(0);
+		}
+
+		public void returnInstruction(Instruction<?, ?> instruction) {
+
+			issuedNum.decrementAndGet();
+
+			if (pool == null) {
+				return;
+			}
+
+			synchronized (pool) {
+				pool.add(instruction);
+			}
+		}
+
+		@Override
+		public Instruction<?, ?> getInstructionInstance(
+				ToolResolver toolResolver) {
+
+			issuedNum.incrementAndGet();
+
+			if (pool == null || pool.size() <= 0) {
+				return super.getInstructionInstance(toolResolver);
+			}
+
+			synchronized (pool) {
+				return pool.get(0);
+			}
+		}
+	}
 }

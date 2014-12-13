@@ -1,28 +1,55 @@
 package ca.uwaterloo.asw;
 
-import java.util.Date;
 
-public abstract  class Instruction implements Runnable {
-	
-	public abstract void setRawDataNodes(DataNode[] rawDataNodes);
-	public abstract void setToolbox(ToolResolver toolResolver);
-	
-	public abstract void preExecution();
-	public abstract void execute();
-	public abstract void postExecution();
-	
-	public abstract DataNode getResult();
+import ca.uwaterloo.asw.DataNode;
 
-	public final void run() {
-		preExecution();
-		Date d = new Date();
-		execute();
-		executionDuration = new Date().getTime() - d.getTime();
-		postExecution();
+public abstract  class Instruction<R, P> implements Runnable {
+	
+	public Instruction(ToolResolver toolResolver) {
+		
 	}
 	
-	private long executionDuration;
-	public long getExecutionDuration() {
-		return executionDuration;
+	public abstract void preExecution();
+	public abstract P execute(R requireData);
+	public abstract void postExecution();
+
+	public final void run() {
+		
+		Long st = System.currentTimeMillis();
+		
+		preExecution();
+		setResult(execute(requireData));
+		postExecution();
+		
+		setDuration(System.currentTimeMillis() - st);
+	}
+	
+	protected Long duration;
+	protected P result;
+	protected R requireData;
+	
+	private void setDuration(Long duration) {
+		this.duration = duration;
+	}
+	
+	private void setResult(P result) {
+		this.result = result;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void setRequireData(DataNode requireData) {
+		if (requireData.size() == 1) {
+			this.requireData = (R) requireData.values().get(0);
+			return;
+		}
+		this.requireData = (R) requireData;
+	}
+	
+	public Long getDuration() {
+		return duration;
+	}
+	
+	public P getResult() {
+		return result;
 	}
 }
