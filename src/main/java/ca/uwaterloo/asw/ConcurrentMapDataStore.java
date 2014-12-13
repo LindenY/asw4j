@@ -1,23 +1,24 @@
 package ca.uwaterloo.asw;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import ca.uwaterloo.asw.reflection.TypeToken;
 
 public class ConcurrentMapDataStore implements DataStore {
 
 	private ConcurrentHashMap<TypeToken<?>, List<Object>> concurrentMap;
+	private volatile int size;
 
 	public ConcurrentMapDataStore() {
 		concurrentMap = new ConcurrentHashMap<TypeToken<?>, List<Object>>();
+		size = 0;
 	}
 
 	public void add(Object obj) {
@@ -35,12 +36,17 @@ public class ConcurrentMapDataStore implements DataStore {
 
 		synchronized (objs) {
 			objs.add(obj);
+			size ++;
 		}
 	}
 
-	public void addAll(List<Object> objs) {
+	public void addAll(List<?> objs) {
+		addAll(objs, null);
+	}
+	
+	public void addAll(List<?> objs, String name) {
 		for (Object obj : objs) {
-			add(obj);
+			add(obj, name);
 		}
 	}
 
@@ -132,6 +138,7 @@ public class ConcurrentMapDataStore implements DataStore {
 		synchronized (objs) {
 			obj = objs.get(0);
 			objs.remove(0);
+			size --;
 		}
 
 		return (T) obj;
@@ -147,5 +154,45 @@ public class ConcurrentMapDataStore implements DataStore {
 
 		return dataNode;
 	}
+
+	public <T> List<T> getAllValues(Class<T> type) {
+		return getAllValues(type, null);
+	}
+
+	public <T> List<T> getAllValues(Class<T> type, String name) {
+		return getAllValues(TypeToken.get(type, name));
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> List<T> getAllValues(TypeToken<T> typeToken) {
+		return (List<T>) concurrentMap.get(typeToken);
+	}
+
+	public Map<TypeToken<?>, List<Object>> getAllValues() {
+		Map<TypeToken<?>, List<Object>> resultMap = new HashMap<TypeToken<?>, List<Object>>();
+		for (TypeToken<?> tk : concurrentMap.keySet()) {
+			List<Object> objs = concurrentMap.get(tk);
+			if (objs.size() > 0) {
+				resultMap.put(tk, objs);
+			}
+		}
+		return resultMap;
+	}
+
+	public Set<TypeToken<?>> keySet() {
+		return concurrentMap.keySet();
+	}
+
+	public Collection<List<Object>> values() {
+		return concurrentMap.values();
+	}
+
+	public int size() {
+		return size;
+	}
+	
+	
+	
+	
 
 }

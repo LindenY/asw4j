@@ -12,5 +12,5 @@ import ca.uwaterloo.asw.DataNode;
 public @interface ProduceData {
 
 	String name();
-	Class<?> type() default DataNode.class;
+	//Class<?> type() default DataNode.class;
 }

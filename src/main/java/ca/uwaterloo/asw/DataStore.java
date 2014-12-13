@@ -1,6 +1,9 @@
 package ca.uwaterloo.asw;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import ca.uwaterloo.asw.DataNode;
 import ca.uwaterloo.asw.reflection.TypeToken;
@@ -11,9 +14,9 @@ public interface DataStore {
 	
 	public void add(Object obj, String name);
 
-	public void addAll(List<Object> objs);
+	public void addAll(List<?> objs);
 	
-	//public void addAll(List<Object> objs, List<TypeToken<?>> typeTokens);
+	public void addAll(List<?> objs, String name);
 
 	public boolean contain(Object obj);
 
@@ -31,4 +34,18 @@ public interface DataStore {
 	
 	public DataNode getAndRemoveAll(List<TypeToken<?>> typeTokens);
 
+	public <T> List<T> getAllValues(Class<T> type);
+	
+	public <T> List<T> getAllValues(Class<T> type, String name);
+	
+	public <T> List<T> getAllValues(TypeToken<T> typeToken);
+	
+	public Map<TypeToken<?>, List<Object>> getAllValues();
+	
+	public Set<TypeToken<?>> keySet();
+	
+	public Collection<List<Object>> values();
+	
+	public int size();
+	
 }

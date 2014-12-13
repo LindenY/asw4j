@@ -22,14 +22,13 @@ public class InstructionNode {
 	protected Class<? extends Instruction<?, ?>> instructionClass;
 	protected List<Class<? extends Instruction<?, ?>>> dependencies;
 	protected List<TypeToken<?>> requireDatas;
-	protected TypeToken<?> produceData;
+	protected String produceDataName;
 
 	protected final boolean supportAsync;
 	protected final boolean supportSingleton;
 
-	public InstructionNode(String[] requireDataNames,
-			Class<?>[] requireDataTypes, String produceDataName,
-			Class<?> produceDataType,
+	public InstructionNode(String[] requireDataNames, Type[] requireDataTypes,
+			String produceDataName,
 			Class<? extends Instruction<?, ?>> instructionClass) {
 
 		this.instructionClass = instructionClass;
@@ -41,17 +40,15 @@ public class InstructionNode {
 		supportSingleton = getInstructionSingletonSupport(instructionClass);
 
 		requireDatas = new ArrayList<TypeToken<?>>();
-		
+
 		checkPreconditionOfRequireDatas(requireDataNames, requireDataTypes);
 		for (int i = 0; i < requireDataTypes.length; i++) {
 			Type type = requireDataTypes[i];
-			String name = requireDataNames == null 
-					? null
-					: requireDataNames[i];
+			String name = requireDataNames == null ? null : requireDataNames[i];
 			requireDatas.add(TypeToken.get(type, name));
 		}
 
-		produceData = TypeToken.get(produceDataType, produceDataName);
+		this.produceDataName = produceDataName;
 	}
 
 	public List<Class<? extends Instruction<?, ?>>> getDependencies() {
@@ -62,8 +59,8 @@ public class InstructionNode {
 		return requireDatas;
 	}
 
-	public TypeToken<?> getProduceData() {
-		return produceData;
+	public String getProduceDataName() {
+		return produceDataName;
 	}
 
 	public Class<? extends Instruction<?, ?>> getInstruction() {
@@ -86,19 +83,16 @@ public class InstructionNode {
 			Instruction<?, ?> instruction = constructor
 					.newInstance(toolResolver);
 			return instruction;
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
 		}
+
+		try {
+			Constructor<? extends Instruction<?, ?>> constructor = instructionClass
+					.getDeclaredConstructor();
+			Instruction<?, ?> instruction = constructor.newInstance();
+			return instruction;
+		} catch (Exception e) {
+		} 
 
 		return null;
 	}
@@ -163,7 +157,7 @@ public class InstructionNode {
 		return null;
 	}
 
-	public static final Class<?>[] getInstructionRequireDataTypes(
+	public static final Type[] getInstructionRequireDataTypes(
 			Class<? extends Instruction<?, ?>> instructionClass) {
 
 		RequireData requireDataAnnotation = instructionClass
@@ -175,7 +169,7 @@ public class InstructionNode {
 			return requireDataAnnotation.types();
 		}
 
-		return new Class<?>[] { (Class<?>) getInstructionActualParameterizedArgumentAtIndex(
+		return new Type[] { getInstructionActualParameterizedArgumentAtIndex(
 				instructionClass, 0) };
 	}
 
@@ -190,21 +184,16 @@ public class InstructionNode {
 		return null;
 	}
 
-	public static final Class<?> getInstructionProduceDataType(
+	public static final Type getInstructionProduceDataType(
 			Class<? extends Instruction<?, ?>> instructionClass) {
 
 		Type type = getInstructionActualParameterizedArgumentAtIndex(
 				instructionClass, 1);
 		if (type != null) {
-			return (Class<?>) type;
+			return type;
 		}
 
-		ProduceData produceDataAnnotation = instructionClass
-				.getAnnotation(ProduceData.class);
-		if (produceDataAnnotation != null) {
-			return produceDataAnnotation.type();
-		}
-		return null;
+		return Object.class;
 	}
 
 	private static final Type getInstructionActualParameterizedArgumentAtIndex(
@@ -247,8 +236,9 @@ public class InstructionNode {
 			throw new IllegalArgumentException();
 		}
 	}
-	
-	private static final void checkPreconditionOfRequireDatas (String[] names, Class<?>[] types) {
+
+	private static final void checkPreconditionOfRequireDatas(String[] names,
+			Type[] types) {
 
 		if (types == null || types.length == 0) {
 			throw new IllegalArgumentException();
@@ -260,5 +250,5 @@ public class InstructionNode {
 			throw new IllegalArgumentException();
 		}
 	}
-	
+
 }
