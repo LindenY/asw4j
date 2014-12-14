@@ -152,7 +152,7 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 			}
 
 			instructionResolver
-					.beforInstructionExecution((Instruction<?, ?>) r);
+					.beforeInstructionExecution((Instruction<?, ?>) r);
 			super.beforeExecute(t, r);
 		}
 

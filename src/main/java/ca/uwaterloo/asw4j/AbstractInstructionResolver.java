@@ -31,7 +31,7 @@ public abstract class AbstractInstructionResolver implements
 		}
 	}
 
-	public void beforInstructionExecution(Instruction<?, ?> instruction) {
+	public void beforeInstructionExecution(Instruction<?, ?> instruction) {
 	}
 
 	public DataStore getDataStore() {

@@ -12,7 +12,7 @@ public interface InstructionResolver {
 	public void afterInstructionExecution(Instruction<?, ?> instruction,
 			Throwable throwed);
 
-	public void beforInstructionExecution(Instruction<?, ?> instruction);
+	public void beforeInstructionExecution(Instruction<?, ?> instruction);
 
 	public Instruction<?, ?> resolveInstruction() throws SecurityException,
 			IllegalArgumentException, NoSuchMethodException,
