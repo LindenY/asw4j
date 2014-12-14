@@ -40,7 +40,7 @@ public class DataStoreTest {
 	private Constructor<DataStore> dataStoreConstructor;
 	
 	@Before
-	public void testSetup(Constructor dataStoreConstructor) {
+	public void testSetup(Constructor<DataStore> dataStoreConstructor) {
 		this.dataStoreConstructor = dataStoreConstructor;
 	}
 	

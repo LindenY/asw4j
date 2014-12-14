@@ -25,8 +25,10 @@ public abstract class AbstractInstructionResolver implements
 
 	public void afterInstructionExecution(Instruction<?, ?> instruction,
 			Throwable throwed) {
+		
 		InstructionClassNode node = getInstructionClassNode(instruction);
 		if (node != null) {
+			dataStore.add(instruction.getResult(), node.getProduceData().getName());
 			node.returnInstanceOfInstruction(instruction);
 		}
 	}
