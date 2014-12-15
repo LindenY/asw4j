@@ -236,6 +236,7 @@ public class ConcurrentMapDataStore implements DataStore {
 		
 		synchronized (objs) {
 			Object obj = combiner.combine((Collection) objs);
+			size -= objs.size() + 1;
 			objs.clear();
 			objs.add(obj);
 		}
@@ -258,6 +259,7 @@ public class ConcurrentMapDataStore implements DataStore {
 		
 		synchronized (objs) {
 			Collection balanced = balancer.balance((Collection) objs);
+			size = size - objs.size() + balanced.size();
 			objs.clear();
 			objs.addAll(balanced);
 		}
