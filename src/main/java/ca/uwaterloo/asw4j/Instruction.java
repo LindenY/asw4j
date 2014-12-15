@@ -2,7 +2,7 @@ package ca.uwaterloo.asw4j;
 
 
 
-public abstract  class Instruction<R, P> implements Runnable {
+public abstract class Instruction<R, P> implements Runnable {
 	
 	public Instruction() {
 	}
