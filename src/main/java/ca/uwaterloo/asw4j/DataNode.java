@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ca.uwaterloo.asw4j.reflection.TypeToken;
 
@@ -74,18 +75,18 @@ public class DataNode {
 		return objs;
 	}
 	
+	public Set<TypeToken<?>> keySet() {
+		return dataMap.keySet();
+	}
+	
 	public int size() {
 		return numObjs;
 	}
 	
 	public List<Object> values() {
-		List<Object> values = null;
+		List<Object> values = new ArrayList<Object>();
 		for (List<Object> objs : dataMap.values()) {
-			if (values == null) {
-				values = objs;
-			} else {
-				values.addAll(values);
-			}
+			values.addAll(objs);
 		}
 		return values;
 	}
