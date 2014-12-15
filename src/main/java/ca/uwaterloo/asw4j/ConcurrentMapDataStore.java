@@ -12,11 +12,24 @@ import java.util.concurrent.ConcurrentHashMap;
 import ca.uwaterloo.asw4j.internal.DataManipulationObjectMap;
 import ca.uwaterloo.asw4j.reflection.TypeToken;
 
+/**
+ * <p>
+ * A implementation of {@link DataStore}. Thread Safe.
+ * </p>
+ * <p>
+ * This implementation is built around a {@link ConcurrentHashMap} to support
+ * concurrency programming. {@link TypeToken} is used as the key, and
+ * {@link ArrayList} as the value.
+ * </p>
+ * 
+ * @author Desmond Lin
+ * @since 1.0.0
+ */
 public class ConcurrentMapDataStore implements DataStore {
 
 	private ConcurrentHashMap<TypeToken<?>, List<Object>> concurrentMap;
 	private DataManipulationObjectMap manipulationObjectMap;
-	
+
 	private volatile int size;
 
 	public ConcurrentMapDataStore() {
@@ -40,18 +53,18 @@ public class ConcurrentMapDataStore implements DataStore {
 
 		synchronized (objs) {
 			objs.add(obj);
-			size ++;
+			size++;
 		}
-		
+
 		combine(typeToken);
 		balance(typeToken);
 	}
 
-	public void addAll(List<?> objs) {
+	public void addAll(Collection<?> objs) {
 		addAll(objs, null);
 	}
-	
-	public void addAll(List<?> objs, String name) {
+
+	public void addAll(Collection<?> objs, String name) {
 		for (Object obj : objs) {
 			add(obj, name);
 		}
@@ -63,31 +76,6 @@ public class ConcurrentMapDataStore implements DataStore {
 
 	public boolean contain(Class<?> type, String name) {
 		return contain(TypeToken.get(type, name));
-	}
-
-	/**
-	 * NOTE: This method is not encouraged to be used, because right now it uses
-	 * normal {@link ArrayList} to store the objects and {@link ArrayList} does
-	 * not support concurrent operation. To prevent
-	 * {@link ConcurrentModificationException} from happening,it uses
-	 * 'synchronized' block to lock the entire {@link ArrayList} from accessing.
-	 * By using this method, it surely prevent the happening of the
-	 * {@link ConcurrentModificationException}, but with the cost of
-	 * performance.
-	 */
-	@Deprecated
-	public boolean contain(Object obj) {
-
-		TypeToken<?> typeToken = TypeToken.get(obj.getClass());
-
-		if (!contain(typeToken)) {
-			return false;
-		}
-
-		List<Object> objs = concurrentMap.get(typeToken);
-		synchronized (objs) {
-			return objs.contains(obj);
-		}
 	}
 
 	public boolean contain(TypeToken<?> typeToken) {
@@ -124,17 +112,6 @@ public class ConcurrentMapDataStore implements DataStore {
 		return true;
 	}
 
-	public Map<TypeToken<?>, List<Object>> getAllValues() {
-		Map<TypeToken<?>, List<Object>> resultMap = new HashMap<TypeToken<?>, List<Object>>();
-		for (TypeToken<?> tk : concurrentMap.keySet()) {
-			List<Object> objs = concurrentMap.get(tk);
-			if (objs.size() > 0) {
-				resultMap.put(tk, objs);
-			}
-		}
-		return resultMap;
-	}
-
 	public <T> List<T> getAllValues(Class<T> type) {
 		return getAllValues(type, null);
 	}
@@ -168,13 +145,13 @@ public class ConcurrentMapDataStore implements DataStore {
 		synchronized (objs) {
 			obj = objs.get(0);
 			objs.remove(0);
-			size --;
+			size--;
 		}
 
 		return (T) obj;
 	}
 
-	public DataNode getAndRemoveAll(List<TypeToken<?>> typeTokens) {
+	public DataNode getAndRemoveAll(Collection<TypeToken<?>> typeTokens) {
 
 		DataNode dataNode = new DataNode();
 
@@ -185,84 +162,183 @@ public class ConcurrentMapDataStore implements DataStore {
 		return dataNode;
 	}
 
-	public Set<TypeToken<?>> keySet() {
-		return concurrentMap.keySet();
+	public <T> T combineAndGet(Class<?> type) {
+		return combineAndGet(type, null);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T combineAndGet(Class<?> type, String name) {
+		return (T) combineAndGet(TypeToken.get(type, name));
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T combineAndGet(TypeToken<T> typeToken) {
+		List<T> objs = (List<T>) concurrentMap.get(typeToken);
+
+		if (objs == null || objs.size() <= 0) {
+			return null;
+		}
+
+		combine(typeToken);
+
+		return objs.get(0);
+	}
+
+	/**
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * NOTE: This method is not encouraged to be used, because right now it uses
+	 * normal {@link ArrayList} to store the objects and {@link ArrayList} does
+	 * not support concurrent operation. To prevent
+	 * {@link ConcurrentModificationException} from happening,it uses
+	 * 'synchronized' block to lock the entire {@link ArrayList} from accessing.
+	 * By using this method, it surely prevent the happening of the
+	 * {@link ConcurrentModificationException}, but with the cost of
+	 * performance.
+	 * </p>
+	 */
+	@Deprecated
+	public boolean containObject(Object obj) {
+
+		TypeToken<?> typeToken = TypeToken.get(obj.getClass());
+
+		if (!contain(typeToken)) {
+			return false;
+		}
+
+		List<Object> objs = concurrentMap.get(typeToken);
+		synchronized (objs) {
+			return objs.contains(obj);
+		}
 	}
 
 	public int size() {
 		return size;
 	}
 
+	public void registerBalancer(TypeToken<?> typeToken, Balancer<?> balancer) {
+		manipulationObjectMap.registerBalancer(typeToken, balancer);
+	}
+
+	public void registerCombiner(TypeToken<?> typeToken, Combiner<?> combiner) {
+		manipulationObjectMap.registerCombiner(typeToken, combiner);
+	}
+	
+	/**
+	 * Returns a {@link Set} view of the keys contained in this
+	 * {@link ConcurrentMapDataStore}.
+	 * 
+	 * @return The {@link Set} of {@link TypeToken} which are served as key in
+	 *         this {@link ConcurrentMapDataStore}.
+	 */
+	public Set<TypeToken<?>> keySet() {
+		return concurrentMap.keySet();
+	}
+
+	/**
+	 * Returns a {@link Collection} view of the values contained in this
+	 * {@link ConcurrentMapDataStore}.
+	 * 
+	 * @return The {@link ArrayList} of {@link Object}s stored in this
+	 *         {@link ConcurrentMapDataStore}.
+	 */
 	public Collection<List<Object>> values() {
 		return concurrentMap.values();
 	}
 	
-	@SuppressWarnings("unchecked")
-	public <T> T combineAndGet(TypeToken<T> typeToken) {
-		List<T> objs = (List<T>) concurrentMap.get(typeToken);
-		
-		if (objs == null || objs.size() <= 0) {
-			return null;
+	/**
+	 * Return a {@link Map} view of {@link TypeToken} and {@link ArrayList} in
+	 * this {@link ConcurrentMapDataStore}.
+	 * 
+	 * @return The {@link Map} of {@link TypeToken}s and {@link ArrayList} of
+	 *         {@link Object}s.
+	 */
+	public Map<TypeToken<?>, List<Object>> getDataMap() {
+		Map<TypeToken<?>, List<Object>> resultMap = new HashMap<TypeToken<?>, List<Object>>();
+		for (TypeToken<?> tk : concurrentMap.keySet()) {
+			List<Object> objs = concurrentMap.get(tk);
+			if (objs.size() > 0) {
+				resultMap.put(tk, objs);
+			}
 		}
-		
-		combine(typeToken);
-		
-		return objs.get(0);
+		return resultMap;
 	}
 
-	public void registerBalancer(TypeToken<?> typeToken,
-			Balancer<?> balancer) {
-		manipulationObjectMap.registerBalancer(typeToken, balancer);
-	}
-
-	public void registerCombiner(TypeToken<?> typeToken,
-			Combiner<?> combiner) {
-		manipulationObjectMap.registerCombiner(typeToken, combiner);
-	}
-	
+	/**
+	 * <pre>
+	 * Helper function.
+	 * </pre>
+	 * <p>
+	 * Invoke {@link Combiner#combine(Collection)} for the given
+	 * {@link TypeToken}.
+	 * </p>
+	 * 
+	 * @param typeToken
+	 *            The {@link TypeToken} to be checked against.
+	 * @return Return {@code true}, if the {@link Combiner#combine(Collection)}
+	 *         is performed for the given {@link TypeToken}; otherwise, return
+	 *         {@code false}.
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private boolean combine(TypeToken<?> typeToken) {
 		List<Object> objs = concurrentMap.get(typeToken);
-	
+
 		if (objs == null || objs.size() <= 0) {
 			return false;
 		}
-		
+
 		Combiner<?> combiner = manipulationObjectMap.getCombiner(typeToken);
 		if (combiner == null) {
 			return false;
 		}
-		
+
 		synchronized (objs) {
 			Object obj = combiner.combine((Collection) objs);
 			size = size - objs.size() + 1;
 			objs.clear();
 			objs.add(obj);
 		}
-		
+
 		return true;
 	}
-	
-	@SuppressWarnings({ "rawtypes", "unchecked"})
+
+	/**
+	 * <pre>
+	 * Helper function.
+	 * </pre>
+	 * <p>
+	 * Invoke {@link Balancer#balance(Collection)} for the given
+	 * {@link TypeToken}
+	 * </p>
+	 * 
+	 * @param typeToken
+	 *            The {@link TypeToken} to be checked against.
+	 * @return Return {@code true}, if the {@link Balancer#balance(Collection)}
+	 *         is performed for the given {@link TypeToken}; otherwise, return
+	 *         {@code false}.
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private boolean balance(TypeToken<?> typeToken) {
 		List<Object> objs = concurrentMap.get(typeToken);
-		
+
 		if (objs == null || objs.size() <= 0) {
 			return false;
 		}
-		
+
 		Balancer<?> balancer = manipulationObjectMap.getBalancer(typeToken);
 		if (balancer == null) {
 			return false;
 		}
-		
+
 		synchronized (objs) {
 			Collection balanced = balancer.balance((Collection) objs);
 			size = size - objs.size() + balanced.size();
 			objs.clear();
 			objs.addAll(balanced);
 		}
-		
+
 		return true;
 	}
 }
