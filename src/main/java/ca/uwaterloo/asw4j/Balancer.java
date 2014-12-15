@@ -12,7 +12,7 @@ import java.util.Collection;
  * It should be registered with a specific {@link TypeToken}, which specifies
  * the {@link Type} of {@link Object}s this {@link Balancer} can balance, in
  * {@link DataStore}. All {@link Object}s stored in {@link DataStore} matching
- * the given {@link TypeToken} are passed in {@link Collection} as a parameter
+ * the given {@link TypeToken} are passed in a {@link Collection} as parameter
  * upon invoking {@link #balance(Collection)}. And the result are stored back
  * into the {@link DataStore}.
  * </p>
