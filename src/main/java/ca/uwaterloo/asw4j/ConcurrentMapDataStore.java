@@ -42,6 +42,9 @@ public class ConcurrentMapDataStore implements DataStore {
 			objs.add(obj);
 			size ++;
 		}
+		
+		combine(typeToken);
+		balance(typeToken);
 	}
 
 	public void addAll(List<?> objs) {
@@ -155,10 +158,6 @@ public class ConcurrentMapDataStore implements DataStore {
 
 	@SuppressWarnings("unchecked")
 	public <T> T getAndRemove(TypeToken<T> typeToken) {
-		
-		combine(typeToken);
-		balance(typeToken);
-
 		List<Object> objs = concurrentMap.get(typeToken);
 
 		if (objs == null || objs.size() <= 0) {
@@ -236,7 +235,7 @@ public class ConcurrentMapDataStore implements DataStore {
 		
 		synchronized (objs) {
 			Object obj = combiner.combine((Collection) objs);
-			size -= objs.size() + 1;
+			size = size - objs.size() + 1;
 			objs.clear();
 			objs.add(obj);
 		}
