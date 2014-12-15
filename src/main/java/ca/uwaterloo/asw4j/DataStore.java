@@ -109,6 +109,38 @@ public interface DataStore {
 	 *         {@link TypeToken} in the {@link Collection}.
 	 */
 	public boolean containAll(List<TypeToken<?>> typeTokens);
+	
+	/**
+	 * Get all {@link Object}s matching the given {@link Type}.
+	 * 
+	 * @param type
+	 *            The {@link Type} to be checked against.
+	 * @return All {@link Object}s matching the given {@link Type}.
+	 */
+	public <T> List<T> getAllValues(Class<T> type);
+
+	/**
+	 * Get all {@link Object}s matching the given {@link Type} and the name
+	 * {@link String}.
+	 * 
+	 * @param type
+	 *            The {@link Type} to be checked against.
+	 * @param name
+	 *            The name {@link String} to be checked against.
+	 * @return All {@link Object}s matching the given {@link Type} and the name
+	 *         {@link String}.
+	 */
+	public <T> List<T> getAllValues(Class<T> type, String name);
+
+	/**
+	 * Get all {@link Object}s matching the given {@link TypeToken}.
+	 * 
+	 * @param typeToken
+	 *            The {@link TypeToken} to be checked against.
+	 * @return All {@link Object}s matching the given {@link TypeToken}.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> List<T> getAllValues(TypeToken<T> typeToken);
 
 	/**
 	 * Get and remove a {@link Object} in the {@link DataStore} matching the
