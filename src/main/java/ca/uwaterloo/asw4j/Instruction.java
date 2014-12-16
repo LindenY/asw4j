@@ -37,7 +37,8 @@ package ca.uwaterloo.asw4j;
  * </p>
  * 
  * @author Desmond Lin
- *
+ * @since 1.0.0
+ * 
  * @param <R>
  *            The require data type of {@link Instruction} class
  * @param <P>
