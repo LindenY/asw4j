@@ -4,6 +4,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import ca.uwaterloo.asw4j.internal.InstructionClassNode;
 
+/**
+ * <p>
+ * An abstract class of {@link InstructionResolver}
+ * </p>
+ * <p>
+ * {@link AbstractInstructionResolver} defines the basic constructors and fields
+ * of {@link InstructionResolver}.
+ * </p>
+ * 
+ * @author Desmond Lin
+ * @since 1.0.0
+ */
 public abstract class AbstractInstructionResolver implements
 		InstructionResolver {
 
