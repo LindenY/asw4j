@@ -145,7 +145,7 @@ public interface InstructionResolver {
 	 * @param produceDataName
 	 *            The produce data name of the {@link Instruction} class.
 	 * @param supportSingleton
-	 *            If the {@link Instruction} is singleton.
+	 *            If the {@link Instruction} is singleton. Default is {@code false}.
 	 */
 	public void registerInstructionClass(
 			Class<? extends Instruction<?, ?>> instructionClass,
