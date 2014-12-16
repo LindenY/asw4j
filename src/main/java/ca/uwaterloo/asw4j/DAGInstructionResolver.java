@@ -14,12 +14,11 @@ import ca.uwaterloo.asw4j.internal.InstructionClassUtility;
 import ca.uwaterloo.asw4j.internal.InstructionClassState;
 
 /**
- * <pre>
- * A {@link InstructionResolver} that resolves dependencies relationship between
- * {@link Instruction}s, and resolves {@link Instruction}s in the order of their
- * dependencies when invokes {@link #resolveInstruction()}.
- * </pre>
  * <p>
+ * An implementation of {@link AbstractInstructionResolver} that resolves
+ * dependencies relationship between {@link Instruction}s, and resolves
+ * {@link Instruction}s in the order of their dependencies when invokes
+ * {@link #resolveInstruction()}.
  * </p>
  * 
  * @author Desmond Lin
