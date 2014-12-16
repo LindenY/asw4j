@@ -23,16 +23,16 @@ import java.lang.annotation.Target;
 public @interface RequireData {
 
 	/**
-	 * Get the require data names of the annotated {@link Instruction}.
+	 * Get the require data names of the annotated {@link Instruction} class.
 	 * 
-	 * @return The require data names of the annotated {@link Instruction}.
+	 * @return The require data names of the annotated {@link Instruction} class.
 	 */
 	String[] names();
 
 	/**
-	 * Get the require data types of the annotated {@link Instruction}.
+	 * Get the require data types of the annotated {@link Instruction} class.
 	 * 
-	 * @return The require data types of annotated {@link Instruction}.
+	 * @return The require data types of annotated {@link Instruction} class.
 	 */
 	Class<?>[] types() default { Object.class };
 }
