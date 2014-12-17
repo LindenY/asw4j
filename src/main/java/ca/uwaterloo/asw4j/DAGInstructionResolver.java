@@ -46,6 +46,15 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		instructionClassNodes = new ArrayList<DAGInstructionResolver.MarkableDependencyNode>();
 	}
 
+	/**
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * The depending {@link Instruction} classes of the registered
+	 * {@link Instruction} are recursively registered.
+	 * </p>
+	 */
 	public void registerInstructionClass(
 			Class<? extends Instruction<?, ?>> instructionClass) {
 
@@ -64,6 +73,15 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 						.getInstructionAsyncSupport(instructionClass));
 	}
 
+	/**
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * The depending {@link Instruction} classes of the registered
+	 * {@link Instruction} are recursively registered.
+	 * </p>
+	 */
 	public void registerInstructionClass(
 			Class<? extends Instruction<?, ?>> instructionClass,
 			String produceDataName) {
@@ -82,6 +100,15 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 						.getInstructionAsyncSupport(instructionClass));
 	}
 
+	/**
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * The depending {@link Instruction} classes of the registered
+	 * {@link Instruction} are recursively registered.
+	 * </p>
+	 */
 	public void registerInstructionClass(
 			Class<? extends Instruction<?, ?>> instructionClass,
 			String[] requireDataNames, Type[] requireDataTypes) {
@@ -98,6 +125,15 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 						.getInstructionAsyncSupport(instructionClass));
 	}
 
+	/**
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * The depending {@link Instruction} classes of the registered
+	 * {@link Instruction} are recursively registered.
+	 * </p>
+	 */
 	public void registerInstructionClass(
 			Class<? extends Instruction<?, ?>> instructionClass,
 			String[] requireDataNames, Type[] requireDataTypes,
@@ -113,6 +149,15 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 						.getInstructionAsyncSupport(instructionClass));
 	}
 
+	/**
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * The depending {@link Instruction} classes of the registered
+	 * {@link Instruction} are recursively registered.
+	 * </p>
+	 */
 	public void registerInstructionClass(
 			Class<? extends Instruction<?, ?>> instructionClass,
 			String[] requireDataNames, Type[] requireDataTypes,
@@ -127,7 +172,13 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 	}
 
 	/**
+	 * <p>
 	 * Register an {@link Instruction} class.
+	 * </p>
+	 * <p>
+	 * The depending {@link Instruction} classes of the registered
+	 * {@link Instruction} are recursively registered.
+	 * </p>
 	 * 
 	 * @param instructionClass
 	 *            The {@link Instruction} class to be registered.
