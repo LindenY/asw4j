@@ -30,7 +30,7 @@ import ca.uwaterloo.asw4j.reflection.TypeToken;
  * diversity needs of different stages of development. To know more about how to
  * integrate SLF4J, visit <a
  * href="http://www.slf4j.org/">http://www.slf4j.org/</a>
- * </p
+ * </p>
  * 
  * @see <a herf="http://www.slf4j.org/">http://www.slf4j.org/</a>
  * @author Desmond Lin
