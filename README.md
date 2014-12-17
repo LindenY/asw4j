@@ -3,7 +3,7 @@
 asw4j(Auto Spread Work for Java) is a Java library aiming to take advantage of multi-core processors and remove the difficulty of the concurrent programming. 
 
 ## About Logging
-ASW4J integrates with <a href="http://www.slf4j.org/">SLF4J logging API</a> to provide insightful information during execution. It categories execution messages into three different logging level (trace, debug, and info) to meet the diversity needs of different stages of development. To know more about how to integrate SLF4J, please visit <a href="http://www.slf4j.org/">http://www.slf4j.org/</a>.
+asw4j integrates with <a href="http://www.slf4j.org/">SLF4J logging API</a> to provide insightful information during execution. It categories execution messages into three different logging level (trace, debug, and info) to meet the diversity needs of different stages of development. To know more about how to integrate SLF4J, please visit <a href="http://www.slf4j.org/">http://www.slf4j.org/</a>.
 
 ## MIT License
 Copyright (c) 2014 Desmond Lin
