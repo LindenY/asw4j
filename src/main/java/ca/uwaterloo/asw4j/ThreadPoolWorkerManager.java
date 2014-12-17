@@ -98,8 +98,8 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 
 	private void startExecution() {
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug(String.format("WorkerManager starts working with "
+		if (LOG.isInfoEnabled()) {
+			LOG.info(String.format("WorkerManager starts working with "
 					+ "%d core workers, %d max workers, "
 					+ "%d registered instruction classses "
 					+ "and %d data objects.", coreNumWorkers, maxNumWorkers,
@@ -134,22 +134,22 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 	}
 
 	private void finishExecution() {
-		if (waiting) {
-			synchronized (this) {
-				this.notify();
-			}
-		}
-
 		if (!threadPool.isShutdown()) {
 			state = STATE.Finished;
 		}
 
-		if (LOG.isDebugEnabled()) {
+		if (LOG.isInfoEnabled()) {
 			long t = allJobsTime.get();
-			LOG.debug(String
+			LOG.info(String
 					.format("WorkManager finishes with %d jobs complete with duration of %d millis and all jobs time of %d millis.",
 							threadPool.getCompletedTaskCount(),
 							System.currentTimeMillis() - startTime, t));
+		}
+		
+		if (waiting) {
+			synchronized (this) {
+				this.notify();
+			}
 		}
 	}
 
@@ -189,7 +189,7 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 						finishedInstruction.getDuration()));
 			}
 
-			if (LOG.isDebugEnabled()) {
+			if (LOG.isInfoEnabled()) {
 				if (finishedInstruction.getDuration() != null
 						&& finishedInstruction.getDuration() >= 0) {
 					workerManager.allJobsTime.addAndGet(finishedInstruction
@@ -228,8 +228,8 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 				count++;
 			}
 
-			if (LOG.isTraceEnabled()) {
-				LOG.trace(String
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(String
 						.format("%d active workers, %d instructions in queue, %d capacity remain, %d instructions added.",
 								threadPool.getActiveCount(), threadPool
 										.getQueue().size(), threadPool
@@ -270,26 +270,21 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 			return false;
 		}
 
-		@SuppressWarnings({ "unchecked", "finally" })
+		@SuppressWarnings({ "unchecked" })
 		public T get() throws InterruptedException, ExecutionException {
 			T result = null;
 			if (state == STATE.Running) {
-				try {
-					synchronized (workerManager) {
-						waiting = true;
-						workerManager.wait();
-					}
-				} catch (InterruptedException e) {
-					if (state == STATE.Finished) {
-						result = (T) instructionResolver.getDataStore()
-								.combineAndGet(resultTypeToken);
-						return result;
-					}
-				} finally {
-					throw new InterruptedException();
+				synchronized (workerManager) {
+					waiting = true;
+					workerManager.wait();
 				}
+
 			}
 
+			if (state == STATE.Finished) {
+				result = (T) instructionResolver.getDataStore()
+						.combineAndGet(resultTypeToken);
+			}
 			return result;
 		}
 
