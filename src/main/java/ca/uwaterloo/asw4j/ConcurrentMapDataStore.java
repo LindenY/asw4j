@@ -14,7 +14,7 @@ import ca.uwaterloo.asw4j.reflection.TypeToken;
 
 /**
  * <p>
- * A implementation of {@link DataStore}. Thread Safe.
+ * An implementation of {@link DataStore}. Thread Safe.
  * </p>
  * <p>
  * This implementation is built around a {@link ConcurrentHashMap} to support

@@ -9,6 +9,13 @@ import java.util.Set;
 
 import ca.uwaterloo.asw4j.Instruction;
 
+/**
+ * A subclass of {@link InstructionClassNode} to provide additional functions
+ * for solving dependencies for {@link Instruction} classes.
+ * 
+ * @author Desmond Lin
+ * @since 1.0.0
+ */
 public class InstructionClassDependencyNode extends InstructionClassNode {
 
 	private Set<InstructionClassDependencyNode> incomings;
@@ -59,7 +66,7 @@ public class InstructionClassDependencyNode extends InstructionClassNode {
 	public void addOutgoing(InstructionClassDependencyNode dependencyNode) {
 		outgoings.add(dependencyNode);
 	}
-	
+
 	@Override
 	public void setState(InstructionClassState state) {
 		super.setState(state);
@@ -78,7 +85,7 @@ public class InstructionClassDependencyNode extends InstructionClassNode {
 			}
 		}
 	}
-	
+
 	private void changeIncomingNodeToReady(InstructionClassDependencyNode node) {
 		if (!node.supportAsync) {
 			boolean isReady = true;
@@ -88,7 +95,7 @@ public class InstructionClassDependencyNode extends InstructionClassNode {
 					break;
 				}
 			}
-			
+
 			if (isReady) {
 				node.setState(InstructionClassState.Ready());
 			} else {
@@ -96,7 +103,7 @@ public class InstructionClassDependencyNode extends InstructionClassNode {
 			}
 		}
 	}
-	
+
 	@Override
 	public void clear() {
 		incomings.clear();
@@ -107,22 +114,22 @@ public class InstructionClassDependencyNode extends InstructionClassNode {
 	public static void resolveDependencies(
 			List<? extends InstructionClassDependencyNode> dependencyNodes) {
 
-		Map<Class<?>, InstructionClassDependencyNode> instructionsMap = 
-				new HashMap<Class<?>, InstructionClassDependencyNode>();
-		
+		Map<Class<?>, InstructionClassDependencyNode> instructionsMap = new HashMap<Class<?>, InstructionClassDependencyNode>();
+
 		for (InstructionClassDependencyNode node : dependencyNodes) {
 			node.clear();
 			instructionsMap.put(node.getInstructionClass(), node);
 		}
-		
+
 		for (InstructionClassDependencyNode node : dependencyNodes) {
 			if (node.getDependencies() == null) {
 				continue;
 			}
-			
+
 			for (Class<?> clz : node.getDependencies()) {
-				InstructionClassDependencyNode dependent = instructionsMap.get(clz);
-				
+				InstructionClassDependencyNode dependent = instructionsMap
+						.get(clz);
+
 				if (dependent != null) {
 					node.addOutgoing(dependent);
 					dependent.addIncoming(node);
@@ -130,17 +137,18 @@ public class InstructionClassDependencyNode extends InstructionClassNode {
 			}
 		}
 	}
-	
-	public static class InstructionClassDependencyState extends InstructionClassState {
+
+	public static class InstructionClassDependencyState extends
+			InstructionClassState {
 
 		protected InstructionClassDependencyState(STATE state,
 				String stateMessage) {
 			super(state, stateMessage);
 		}
-		
-		private final static InstructionClassState BlockedByDependency 
-			= new InstructionClassState(STATE.Blocked, "Instruction is blocked by dependency");
-		
+
+		private final static InstructionClassState BlockedByDependency = new InstructionClassState(
+				STATE.Blocked, "Instruction is blocked by dependency");
+
 		public final static InstructionClassState BlockedByDependency() {
 			return BlockedByDependency;
 		}

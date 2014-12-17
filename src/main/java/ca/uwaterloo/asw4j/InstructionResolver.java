@@ -3,9 +3,11 @@ package ca.uwaterloo.asw4j;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 
+import ca.uwaterloo.asw4j.meta.Singleton;
+
 /**
  * <p>
- * A interface defined to register {@link Instruction} classes, manage
+ * An interface defined to register {@link Instruction} classes, manage
  * ready-to-run {@link Instruction} classes and resolve the require data and the
  * produce data of {@link Instruction} classes.
  * </p>
@@ -145,7 +147,9 @@ public interface InstructionResolver {
 	 * @param produceDataName
 	 *            The produce data name of the {@link Instruction} class.
 	 * @param supportSingleton
-	 *            If the {@link Instruction} is singleton. Default is {@code false}.
+	 *            If the {@link Instruction} class is singleton. Default is {@code false}.
+	 *            
+	 * @see {@link Singleton}
 	 */
 	public void registerInstructionClass(
 			Class<? extends Instruction<?, ?>> instructionClass,

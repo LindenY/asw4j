@@ -2,7 +2,7 @@ package ca.uwaterloo.asw4j;
 
 /**
  * <p>
- * A implementation of {@link Runnable}.
+ * An implementation of {@link Runnable}.
  * </p>
  * <p>
  * All {@link Instruction} classes are managed, resolved, and instantiated by

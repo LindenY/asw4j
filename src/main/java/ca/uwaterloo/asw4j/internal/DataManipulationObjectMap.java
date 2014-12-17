@@ -6,6 +6,12 @@ import ca.uwaterloo.asw4j.Balancer;
 import ca.uwaterloo.asw4j.Combiner;
 import ca.uwaterloo.asw4j.reflection.TypeToken;
 
+/**
+ * A class helps to manage and resolve {@link Combiner}s and {@link Balancer}s. 
+ * 
+ * @author Desmond Lin
+ * @since 1.0.0
+ */
 public class DataManipulationObjectMap {
 	
 	private ConcurrentHashMap<TypeToken<?>, Combiner<?>> combiners;
