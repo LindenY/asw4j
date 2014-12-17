@@ -139,7 +139,6 @@ public interface DataStore {
 	 *            The {@link TypeToken} to be checked against.
 	 * @return All {@link Object}s matching the given {@link TypeToken}.
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> List<T> getAllValues(TypeToken<T> typeToken);
 
 	/**
