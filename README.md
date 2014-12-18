@@ -14,6 +14,16 @@ There are these main components in asw4j:
 <li>DataStore: store and search for data</li>
 </ul>
 
+## Download
+asw4j is deployed in <a href="http://search.maven.org/">Maven Central Repo</a>. To download, just include the following in pom.xml file.
+```xml
+<dependency>
+  <groupId>ca.uwaterloo</groupId>
+  <artifactId>asw4j</artifactId>
+  <version>1.0.0-RELEASE</version>
+</dependency>
+```
+
 ## About Logging
 asw4j integrates with <a href="http://www.slf4j.org/">SLF4J logging API</a> to provide insightful information during execution. It categories execution messages into three different logging level (trace, debug, and info) to meet the diversity needs of different stages of development. To know more about how to integrate SLF4J, please visit <a href="http://www.slf4j.org/">http://www.slf4j.org/</a>.
 
