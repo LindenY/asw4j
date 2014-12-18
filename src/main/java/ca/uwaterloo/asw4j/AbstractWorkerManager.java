@@ -2,6 +2,19 @@ package ca.uwaterloo.asw4j;
 
 import java.lang.reflect.Type;
 
+/**
+ * <p>
+ * An abstract class that implements {@link WorkerManager}.
+ * </p>
+ * <p>
+ * {@link AbstractWorkerManager} defines the basic constructors and fields for
+ * the actual implementation of {@link WorkerManager}.
+ * </p>
+ * 
+ * @author Desmond Lin
+ * @since 1.0.0
+ *
+ */
 public abstract class AbstractWorkerManager implements WorkerManager {
 
 	protected InstructionResolver instructionResolver;

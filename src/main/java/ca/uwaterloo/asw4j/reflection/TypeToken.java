@@ -2,6 +2,30 @@ package ca.uwaterloo.asw4j.reflection;
 
 import java.lang.reflect.Type;
 
+/**
+ * <p>
+ * This class is served as an identity for data {@link Type}, which is used to
+ * distinguish and track the difference between same data type.
+ * </p>
+ * <p>
+ * It will be confusing when identifying and resolving the desire data, if only
+ * {@link Type} is used. Therefore, {@link TypeToken} is introduced to prevent
+ * the data {@link Type} confusion.
+ * </p>
+ * <p>
+ * To have different {@link TypeToken}s for the exact same {@link Type}, a name
+ * {@link String} can be used as an id.
+ * </p>
+ * <p>
+ * Use {@link #get(Class)}, {@link #get(Type)}, {@link #get(Class, String)}, and
+ * {@link #get(Type, String)} to obtain a {@link TypeToken}.
+ * </p>
+ * 
+ * @author Desmond Lin
+ * @since 1.0.0
+ *
+ * @param <T> The {@link Type} that this {@link TypeToken} represent.
+ */
 public class TypeToken<T> {
 
 	private final String name;
@@ -61,7 +85,7 @@ public class TypeToken<T> {
 	public static <T> TypeToken<T> get(Class<T> type, String name) {
 		return new TypeToken<T>(type, name);
 	}
-	
+
 	public static TypeToken<?> get(Type type) {
 		return new TypeToken<Object>(type, null);
 	}

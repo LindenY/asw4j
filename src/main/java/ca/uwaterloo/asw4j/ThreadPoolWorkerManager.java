@@ -14,6 +14,28 @@ import org.slf4j.LoggerFactory;
 
 import ca.uwaterloo.asw4j.reflection.TypeToken;
 
+/**
+ * <p>
+ * An implementation of {@link WorkerManager} which uses pooling technique to
+ * recycle the "workers"({@link Thread}s). By recycling and reusing the
+ * {@link Thread}s, {@link ThreadPoolWorkerManager} reduces the system resources
+ * usage and boost the performance.
+ * </p>
+ * <p>
+ * {@link ThreadPoolWorkerManager} integrates with <a
+ * href="http://www.slf4j.org/">SLF4J logging API</a> to provide insightful
+ * information during execution. It categories execution messages into three
+ * different logging level ( {@link Logger#trace(String)},
+ * {@link Logger#debug(String)}, and {@link Logger#info(String)}) to meet the
+ * diversity needs of different stages of development. To know more about how to
+ * integrate SLF4J, visit <a
+ * href="http://www.slf4j.org/">http://www.slf4j.org/</a>
+ * </p>
+ * 
+ * @see <a herf="http://www.slf4j.org/">http://www.slf4j.org/</a>
+ * @author Desmond Lin
+ * @since 1.0.0
+ */
 public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 
 	private static final Logger LOG = LoggerFactory
@@ -57,7 +79,8 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 
 	public <T> Future<T> asyncStart(Class<T> type, String name) {
 		startExecution();
-		return new FutureTask<T>(this, TypeToken.get(type, name)) {};
+		return new FutureTask<T>(this, TypeToken.get(type, name)) {
+		};
 	}
 
 	public <T> T start(Class<T> type, String name) {
@@ -73,11 +96,10 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 		return result;
 	}
 
-
 	private void startExecution() {
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug(String.format("WorkerManager starts working with "
+		if (LOG.isInfoEnabled()) {
+			LOG.info(String.format("WorkerManager starts working with "
 					+ "%d core workers, %d max workers, "
 					+ "%d registered instruction classses "
 					+ "and %d data objects.", coreNumWorkers, maxNumWorkers,
@@ -89,45 +111,45 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 		}
 
 		state = STATE.Running;
-		
+
 		if (threadPool.resolveInstructions() == 0) {
 			finishExecution();
 		}
 	}
 
 	private void cancelExecution(boolean mayInterruptIfRunning) {
-		
+
 		if (mayInterruptIfRunning) {
 			threadPool.shutdownNow();
 		} else {
 			threadPool.shutdown();
 		}
-		
+
 		if (waiting) {
 			synchronized (this) {
 				this.notify();
 			}
 		}
-		state = STATE.Cancelled;
+		state = STATE.Canceled;
 	}
 
 	private void finishExecution() {
-		if (waiting) {
-			synchronized (this) {
-				this.notify();
-			}
-		}
-		
 		if (!threadPool.isShutdown()) {
 			state = STATE.Finished;
 		}
 
-		if (LOG.isDebugEnabled()) {
+		if (LOG.isInfoEnabled()) {
 			long t = allJobsTime.get();
-			LOG.debug(String
+			LOG.info(String
 					.format("WorkManager finishes with %d jobs complete with duration of %d millis and all jobs time of %d millis.",
 							threadPool.getCompletedTaskCount(),
 							System.currentTimeMillis() - startTime, t));
+		}
+		
+		if (waiting) {
+			synchronized (this) {
+				this.notify();
+			}
 		}
 	}
 
@@ -152,7 +174,7 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 			}
 
 			instructionResolver
-					.beforInstructionExecution((Instruction<?, ?>) r);
+					.beforeInstructionExecution((Instruction<?, ?>) r);
 			super.beforeExecute(t, r);
 		}
 
@@ -167,14 +189,14 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 						finishedInstruction.getDuration()));
 			}
 
-			if (LOG.isDebugEnabled()) {
+			if (LOG.isInfoEnabled()) {
 				if (finishedInstruction.getDuration() != null
 						&& finishedInstruction.getDuration() >= 0) {
 					workerManager.allJobsTime.addAndGet(finishedInstruction
 							.getDuration());
 				}
 			}
-			
+
 			instructionResolver.afterInstructionExecution(finishedInstruction,
 					t);
 
@@ -206,8 +228,8 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 				count++;
 			}
 
-			if (LOG.isTraceEnabled()) {
-				LOG.trace(String
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(String
 						.format("%d active workers, %d instructions in queue, %d capacity remain, %d instructions added.",
 								threadPool.getActiveCount(), threadPool
 										.getQueue().size(), threadPool
@@ -222,51 +244,47 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 
 		private WorkerManager workerManager;
 		private TypeToken<?> resultTypeToken;
-		
-		public FutureTask(WorkerManager workerManager, TypeToken<?> resultTypeToken) {
+
+		public FutureTask(WorkerManager workerManager,
+				TypeToken<?> resultTypeToken) {
 			this.workerManager = workerManager;
 			this.resultTypeToken = resultTypeToken;
 		}
-		
+
 		public boolean cancel(boolean mayInterruptIfRunning) {
 			cancelExecution(mayInterruptIfRunning);
 			return true;
 		}
 
 		public boolean isCancelled() {
-			if (getState() == STATE.Cancelled) {
+			if (getState() == STATE.Canceled) {
 				return true;
 			}
 			return false;
 		}
 
 		public boolean isDone() {
-			if (getState() != STATE.Ready 
-					&& getState() != STATE.Running) {
+			if (getState() != STATE.Ready && getState() != STATE.Running) {
 				return true;
 			}
 			return false;
 		}
 
-		@SuppressWarnings({ "unchecked", "finally" })
+		@SuppressWarnings({ "unchecked" })
 		public T get() throws InterruptedException, ExecutionException {
 			T result = null;
 			if (state == STATE.Running) {
-				try {
-					synchronized (workerManager) {
-						waiting = true;
-						workerManager.wait();
-					}
-				} catch (InterruptedException e) {
-					if (state == STATE.Finished) {
-						result = (T) instructionResolver.getDataStore().combineAndGet(resultTypeToken);
-						return result;
-					}
-				} finally {
-					throw new InterruptedException();
+				synchronized (workerManager) {
+					waiting = true;
+					workerManager.wait();
 				}
+
 			}
-			
+
+			if (state == STATE.Finished) {
+				result = (T) instructionResolver.getDataStore()
+						.combineAndGet(resultTypeToken);
+			}
 			return result;
 		}
 
@@ -275,6 +293,6 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 			threadPool.awaitTermination(timeout, unit);
 			return get();
 		}
-		
+
 	}
 }

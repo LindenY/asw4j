@@ -11,6 +11,16 @@ import ca.uwaterloo.asw4j.internal.InstructionClassNode;
 import ca.uwaterloo.asw4j.internal.InstructionClassState;
 import ca.uwaterloo.asw4j.internal.InstructionClassUtility;
 
+/**
+ * <p>
+ * An implementation of {@link AbstractInstructionResolver} which has minimal
+ * overhead for {@link Instruction} classes. {@link Instruction}s are resolved
+ * in the order of {@link Instruction}s register order.
+ * </p>
+ * 
+ * @author Desmond Lin
+ * @since 1.0.0
+ */
 public class SimpleInstructionResolver extends AbstractInstructionResolver {
 	
 	private final static Logger LOG = LoggerFactory.getLogger(SimpleInstructionResolver.class);

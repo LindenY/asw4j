@@ -9,7 +9,15 @@ import java.lang.reflect.WildcardType;
 import java.util.Arrays;
 
 /**
+ * <p>
+ * An utility class to provide helper functions for {@link Type}.
+ * </p>
+ * <p>
  * It is currently not supporting {@link WildcardType}
+ * </p>
+ * 
+ * @author Desmond Lin
+ * @since 1.0.0
  */
 public class TypeUtility {
 
@@ -177,14 +185,15 @@ public class TypeUtility {
 					arrayType.getGenericComponentType(), subType);
 			return Array.newInstance(compoment, 0).getClass();
 		} else if (genericType instanceof TypeVariable) {
-			/*TypeVariable<?> variable = (TypeVariable<?>) genericType;
-			genericType = getTypeVariableMap(subType).get(variable);
-			genericType = genericType == null ? resolveBound(variable)
-					: resolveRawClass(genericType, subType);*/
+			/*
+			 * TypeVariable<?> variable = (TypeVariable<?>) genericType;
+			 * genericType = getTypeVariableMap(subType).get(variable);
+			 * genericType = genericType == null ? resolveBound(variable) :
+			 * resolveRawClass(genericType, subType);
+			 */
 		}
 
-		return genericType instanceof Class ? (Class<?>) genericType
-				: null;
+		return genericType instanceof Class ? (Class<?>) genericType : null;
 	}
 
 	private static final class GenericArrayTypeImpl implements GenericArrayType {

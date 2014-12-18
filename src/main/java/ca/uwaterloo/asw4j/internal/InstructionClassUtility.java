@@ -9,6 +9,13 @@ import ca.uwaterloo.asw4j.meta.RequireData;
 import ca.uwaterloo.asw4j.meta.Singleton;
 import ca.uwaterloo.asw4j.reflection.TypeUtility;
 
+/**
+ * An utility class which provides useful functions to extract meta data from
+ * {@link Instruction} classes.
+ * 
+ * @author Desmond Lin
+ * @since 1.0.0
+ */
 public class InstructionClassUtility {
 
 	public static final void checkPreconditionOfRequireDatas(String[] names,
@@ -51,7 +58,7 @@ public class InstructionClassUtility {
 				return depends;
 			}
 		}
-		
+
 		return null;
 	}
 

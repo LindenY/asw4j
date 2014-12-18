@@ -1,4 +1,4 @@
-package ca.uwaterloo.asw.smokeTest;
+package ca.uwaterloo.asw4j.unitTest;
 
 import java.util.ArrayList;
 import java.util.Date;
