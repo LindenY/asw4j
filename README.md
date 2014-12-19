@@ -37,127 +37,27 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Sample Code
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-import ca.uwaterloo.asw4j.Balancer;
-import ca.uwaterloo.asw4j.Combiner;
-import ca.uwaterloo.asw4j.ConcurrentMapDataStore;
-import ca.uwaterloo.asw4j.DataStore;
-import ca.uwaterloo.asw4j.Instruction;
-import ca.uwaterloo.asw4j.InstructionResolver;
-import ca.uwaterloo.asw4j.SimpleInstructionResolver;
-import ca.uwaterloo.asw4j.ThreadPoolWorkerManager;
-import ca.uwaterloo.asw4j.WorkerManager;
-import ca.uwaterloo.asw4j.reflection.TypeToken;
-
+This snippet of Java code demonstrates the basic usage of asw4j. It loops through every integer between the range, and find the Palindrome number (Palindrome number: a number which reads the same backward or forward.).
+```java
 public class Main {
 
 	public static void main(String[] args) {
 
-		Integer[] initData = new Integer[] { 0,  50000000
-				};
-
-		cancelExecution(initData);
-	}
-
-	static void singltThreadExecution(Integer[] data) {
-
-		LoopInstruction instruction = new LoopInstruction();
-		
-		Long st = System.currentTimeMillis();
-		List<String> resultList = instruction.execute(data);
-		System.out.println(String.format(
-				"NumOfThread: %d, ExecutionTime: %d; ResultSize:%d", 1,
-				System.currentTimeMillis() - st, resultList.size()));
-	}
-
-	static void multipleThreadsExecution(Integer[] data, int numThread) {
+		Integer[] initData = new Integer[] { 0,  50000000};
 
 		DataStore dataStore = new ConcurrentMapDataStore();
-		dataStore
-				.registerBalancer(TypeToken.get(data.getClass()), new Mapper());
-		dataStore.registerCombiner(TypeToken.get(ArrayList.class),
-				new CollectionCombiner());
-		dataStore.add(data);
+		dataStore.registerBalancer(TypeToken.get(data.getClass()), new Mapper());
+		dataStore.registerCombiner(TypeToken.get(ArrayList.class), new CollectionCombiner());
+		dataStore.add(initData);
 
-		InstructionResolver instructionResolver = new SimpleInstructionResolver(
-				dataStore);
-		instructionResolver.registerInstructionClass(LoopInstruction.class);
+		InstructionResolver instructionResolver = new SimpleInstructionResolver(dataStore);
+		instructionResolver.registerInstructionClass(PalindromeFindingInstruction.class);
 
-		WorkerManager workerManager = new ThreadPoolWorkerManager(numThread, numThread,
-				instructionResolver);
-
-		Long st = System.currentTimeMillis();
+		WorkerManager workerManager = new ThreadPoolWorkerManager(3, 5, instructionResolver);
 		List resultList = workerManager.start(ArrayList.class, null);
-
-		System.out.println(String.format(
-				"NumOfThread: %d, ExecutionTime: %d; ResultSize:%d", numThread,
-				System.currentTimeMillis() - st, resultList.size()));
-	}
-	
-	static void cancelExecution(Integer[] data) {
-		
-		DataStore dataStore = new ConcurrentMapDataStore();
-		dataStore
-				.registerBalancer(TypeToken.get(data.getClass()), new Mapper());
-		dataStore.registerCombiner(TypeToken.get(ArrayList.class),
-				new CollectionCombiner());
-		dataStore.add(data);
-
-		InstructionResolver instructionResolver = new SimpleInstructionResolver(
-				dataStore);
-		instructionResolver.registerInstructionClass(LoopInstruction.class);
-
-		WorkerManager workerManager = new ThreadPoolWorkerManager(3, 3,
-				instructionResolver);
-
-		Long st = System.currentTimeMillis();
-		Future<ArrayList> future = workerManager.asyncStart(ArrayList.class, null);
-
-		future.cancel(true);
-		
-		System.out.println("IsDone: " + future.isDone());
-		System.out.println("IsCanceled: " + future.isCancelled());
-		try {
-			System.out.println(String.format(
-					"NumOfThread: %d, ExecutionTime: %d; ResultSize:%d", 3,
-					System.currentTimeMillis() - st, future.get() == null ? 0 : future.get().size()));
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
-		}
 	}
 
-	static void printResult(List<String> strList) {
-		System.out.println();
-		System.out.println("-------------Start Print Result " + strList.size()
-				+ "----------------");
-		for (String str : strList) {
-			System.out.println(str);
-		}
-		System.out.println("-------------End Print Result----------------");
-	}
-
-	static void printLeftOver(DataStore dataStore) {
-		System.out.println();
-		System.out.println("-------------Start Print LeftOver----------------");
-		if (dataStore instanceof ConcurrentMapDataStore) {
-			Map<TypeToken<?>, List<Object>> map = ((ConcurrentMapDataStore) dataStore)
-					.getDataMap();
-			for (TypeToken<?> tk : map.keySet()) {
-				System.out.println(String.format("[%s] size=%d", tk.toString(),
-						map.get(tk).size()));
-			}
-		}
-		System.out.println("-------------End Print LeftOver----------------");
-	}
-
-	public static class LoopInstruction extends
+	public static class PalindromeFindingInstruction extends
 			Instruction<Integer[], List<String>> {
 
 		@Override
@@ -179,7 +79,6 @@ public class Main {
 					strList.add(str);
 				}
 			}
-
 			return strList;
 		}
 	}
@@ -222,5 +121,4 @@ public class Main {
 			return stringList;
 		}
 	}
-
 }
