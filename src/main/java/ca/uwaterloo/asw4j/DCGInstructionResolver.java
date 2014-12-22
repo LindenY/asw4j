@@ -55,4 +55,13 @@ public class DCGInstructionResolver extends AbstractInstructionResolver {
 
 	}
 
+	@Override
+	public void afterInstructionExecution(Instruction<?, ?> instruction,
+			Throwable throwed) {
+		// TODO Auto-generated method stub
+		super.afterInstructionExecution(instruction, throwed);
+	}
+	
+	
+
 }
