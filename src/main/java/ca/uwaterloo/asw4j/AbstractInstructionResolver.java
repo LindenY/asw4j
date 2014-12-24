@@ -6,7 +6,7 @@ import ca.uwaterloo.asw4j.internal.InstructionClassNode;
 
 /**
  * <p>
- * An abstract class of {@link InstructionResolver}
+ * An abstract class of {@link InstructionResolver} and {@link InstructionClassRegister}.
  * </p>
  * <p>
  * {@link AbstractInstructionResolver} defines the basic constructors and fields
@@ -17,7 +17,7 @@ import ca.uwaterloo.asw4j.internal.InstructionClassNode;
  * @since 1.0.0
  */
 public abstract class AbstractInstructionResolver implements
-		InstructionResolver {
+		InstructionResolver, InstructionClassRegister {
 
 	protected final boolean enablePooling;
 
@@ -64,19 +64,35 @@ public abstract class AbstractInstructionResolver implements
 		this.toolResolver = toolResolver;
 	}
 
-	public boolean isPoolingEnabled() {
-		return enablePooling;
-	}
-
 	public int numberOfRegisteredInstruction() {
 		return instructionClassMap.size();
 	}
+	
+	
 
-	public InstructionClassNode getInstructionClassNode(
+	// TODO : Add comments
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean isPoolingEnabled() {
+		return enablePooling;
+	}
+	
+	/**
+	 * 
+	 * @param instruction
+	 * @return
+	 */
+	protected InstructionClassNode getInstructionClassNode(
 			Instruction<?, ?> instruction) {
 		return instructionClassMap.get(instruction.getClass());
 	}
 
+	/**
+	 * 
+	 * @param instructionNode
+	 */
 	protected void putIntructionClassNode(InstructionClassNode instructionNode) {
 		instructionClassMap.put(instructionNode.getInstructionClass(),
 				instructionNode);

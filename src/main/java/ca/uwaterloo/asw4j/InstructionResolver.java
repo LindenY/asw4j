@@ -38,6 +38,20 @@ public interface InstructionResolver {
 	public DataStore getDataStore();
 
 	/**
+	 * Set the {@link ToolResolver}.
+	 * 
+	 * @param toolResolver
+	 */
+	public void setToolResolver(ToolResolver toolResolver);
+	
+	/**
+	 * Get the {@link ToolResolver}.
+	 * 
+	 * @return
+	 */
+	public ToolResolver getToolResolver();
+
+	/**
 	 * Invoked after resolved {@link Instruction} execution.
 	 * 
 	 * @param instruction
@@ -75,84 +89,5 @@ public interface InstructionResolver {
 			IllegalArgumentException, NoSuchMethodException,
 			InstantiationException, IllegalAccessException,
 			InvocationTargetException;
-
-	/**
-	 * Get the number of registered {@link Instruction}.
-	 * 
-	 * @return The number of registered {@link Instruction}.
-	 */
-	public int numberOfRegisteredInstruction();
-
-	/**
-	 * Register an {@link Instruction} class.
-	 * 
-	 * @param instructionClass
-	 *            The {@link Instruction} class to be registered.
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass);
-
-	/**
-	 * Register an {@link Instruction} class.
-	 * 
-	 * @param instructionClass
-	 *            The {@link Instruction} class to be registered.
-	 * @param produceDataName
-	 *            The produce data name of the {@link Instruction} class.
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass,
-			String produceDataName);
-
-	/**
-	 * Register an {@link Instruction} class.
-	 * 
-	 * @param instructionClass
-	 *            The {@link Instruction} class to be registered.
-	 * @param requireDataNames
-	 *            The require data types of the {@link Instruction} class.
-	 * @param requireDataTypes
-	 *            The require data names of the {@link Instruction} class.
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass,
-			String[] requireDataNames, Type[] requireDataTypes);
-
-	/**
-	 * Register an {@link Instruction} class.
-	 * 
-	 * @param instructionClass
-	 *            The {@link Instruction} class to be registered.
-	 * @param requireDataNames
-	 *            The require data types of the {@link Instruction} class.
-	 * @param requireDataTypes
-	 *            The require data names of the {@link Instruction} class.
-	 * @param produceDataName
-	 *            The produce data name of the {@link Instruction} class.
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass,
-			String[] requireDataNames, Type[] requireDataTypes,
-			String produceDataName);
-
-	/**
-	 * Register an {@link Instruction} class.
-	 * 
-	 * @param instructionClass
-	 *            The {@link Instruction} class to be registered.
-	 * @param requireDataNames
-	 *            The require data types of the {@link Instruction} class.
-	 * @param requireDataTypes
-	 *            The require data names of the {@link Instruction} class.
-	 * @param produceDataName
-	 *            The produce data name of the {@link Instruction} class.
-	 * @param supportSingleton
-	 *            If the {@link Instruction} class is singleton. Default is {@code false}.
-	 *            
-	 * @see {@link Singleton}
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass,
-			String[] requireDataNames, Type[] requireDataTypes,
-			String produceDataName, boolean supportSingleton);
+	
 }
