@@ -27,148 +27,26 @@ import ca.uwaterloo.asw4j.meta.Singleton;
  * @since 1.0.0
  *
  */
-public class DAGInstructionResolver extends AbstractInstructionResolver {
+public class DAGInstructionResolver extends AbstractDependencyInstructionResolver {
 
 	private final static Logger LOG = LoggerFactory
 			.getLogger(DAGInstructionResolver.class);
 
-	private boolean requireResolve;
 	private List<MarkableDependencyNode> instructionClassNodes;
 
 	public DAGInstructionResolver(DataStore dataStore) {
-		this(null, dataStore, true);
+		this(dataStore, null, false);
+	}
+	
+	public DAGInstructionResolver(DataStore dataStore, ToolResolver toolResolver) {
+		this(dataStore, toolResolver, false);
 	}
 
-	public DAGInstructionResolver(ToolResolver toolResolver,
-			DataStore dataStore, boolean enablePooling) {
+	public DAGInstructionResolver(DataStore dataStore,
+			ToolResolver toolResolver, boolean enablePooling) {
 		super(dataStore, toolResolver, enablePooling);
 
 		instructionClassNodes = new ArrayList<DAGInstructionResolver.MarkableDependencyNode>();
-	}
-
-	/**
-	 * <p>
-	 * {@inheritDoc}
-	 * </p>
-	 * <p>
-	 * The depending {@link Instruction} classes of the registered
-	 * {@link Instruction} are recursively registered.
-	 * </p>
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass) {
-
-		registerInstructionClass(instructionClass,
-				InstructionClassUtility
-						.getInstructionRequireDataNames(instructionClass),
-				InstructionClassUtility
-						.getInstructionRequireDataTypes(instructionClass),
-				InstructionClassUtility
-						.getInstructionProduceDataName(instructionClass),
-				InstructionClassUtility
-						.getInstructionSingletonSupport(instructionClass),
-				InstructionClassUtility
-						.getInstructionDependencies(instructionClass),
-				InstructionClassUtility
-						.getInstructionAsyncSupport(instructionClass));
-	}
-
-	/**
-	 * <p>
-	 * {@inheritDoc}
-	 * </p>
-	 * <p>
-	 * The depending {@link Instruction} classes of the registered
-	 * {@link Instruction} are recursively registered.
-	 * </p>
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass,
-			String produceDataName) {
-
-		registerInstructionClass(instructionClass,
-				InstructionClassUtility
-						.getInstructionRequireDataNames(instructionClass),
-				InstructionClassUtility
-						.getInstructionRequireDataTypes(instructionClass),
-				produceDataName,
-				InstructionClassUtility
-						.getInstructionSingletonSupport(instructionClass),
-				InstructionClassUtility
-						.getInstructionDependencies(instructionClass),
-				InstructionClassUtility
-						.getInstructionAsyncSupport(instructionClass));
-	}
-
-	/**
-	 * <p>
-	 * {@inheritDoc}
-	 * </p>
-	 * <p>
-	 * The depending {@link Instruction} classes of the registered
-	 * {@link Instruction} are recursively registered.
-	 * </p>
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass,
-			String[] requireDataNames, Type[] requireDataTypes) {
-
-		registerInstructionClass(instructionClass, requireDataNames,
-				requireDataTypes,
-				InstructionClassUtility
-						.getInstructionProduceDataName(instructionClass),
-				InstructionClassUtility
-						.getInstructionSingletonSupport(instructionClass),
-				InstructionClassUtility
-						.getInstructionDependencies(instructionClass),
-				InstructionClassUtility
-						.getInstructionAsyncSupport(instructionClass));
-	}
-
-	/**
-	 * <p>
-	 * {@inheritDoc}
-	 * </p>
-	 * <p>
-	 * The depending {@link Instruction} classes of the registered
-	 * {@link Instruction} are recursively registered.
-	 * </p>
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass,
-			String[] requireDataNames, Type[] requireDataTypes,
-			String produceDataName) {
-
-		registerInstructionClass(instructionClass, requireDataNames,
-				requireDataTypes, produceDataName,
-				InstructionClassUtility
-						.getInstructionSingletonSupport(instructionClass),
-				InstructionClassUtility
-						.getInstructionDependencies(instructionClass),
-				InstructionClassUtility
-						.getInstructionAsyncSupport(instructionClass));
-	}
-
-	/**
-	 * <p>
-	 * {@inheritDoc}
-	 * </p>
-	 * <p>
-	 * The depending {@link Instruction} classes of the registered
-	 * {@link Instruction} are recursively registered.
-	 * </p>
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass,
-			String[] requireDataNames, Type[] requireDataTypes,
-			String produceDataName, boolean supportSingleton) {
-
-		registerInstructionClass(instructionClass, requireDataNames,
-				requireDataTypes, produceDataName, supportSingleton,
-				InstructionClassUtility
-						.getInstructionDependencies(instructionClass),
-				InstructionClassUtility
-						.getInstructionAsyncSupport(instructionClass));
 	}
 
 	/**
@@ -222,14 +100,6 @@ public class DAGInstructionResolver extends AbstractInstructionResolver {
 		instructionClassNodes.add(mdn);
 		putIntructionClassNode(mdn);
 		requireResolveDependencies();
-	}
-
-	/**
-	 * Force the {@link DAGInstructionResolver} to resolve the dependencies
-	 * between registered {@link Instruction}s.
-	 */
-	public void requireResolveDependencies() {
-		requireResolve = true;
 	}
 
 	public Instruction<?, ?> resolveInstruction() throws SecurityException,

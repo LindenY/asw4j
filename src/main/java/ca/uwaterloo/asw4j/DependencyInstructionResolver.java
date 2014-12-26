@@ -5,16 +5,8 @@ import java.lang.reflect.Type;
 import ca.uwaterloo.asw4j.meta.DependOn;
 import ca.uwaterloo.asw4j.meta.Singleton;
 
-/**
- * The sub-interface defined to provide more dependency related
- * {@link Instruction} class register methods.
- * 
- * @author Desmond Lin
- * @since 1.1.0
- */
-public interface DependencyInstructionClassRegister extends
-		InstructionClassRegister {
-
+public interface DependencyInstructionResolver extends InstructionResolver {
+	
 	/**
 	 * <p>
 	 * Register an {@link Instruction} class.
@@ -102,4 +94,5 @@ public interface DependencyInstructionClassRegister extends
 			String produceDataName, boolean supportSingleton,
 			Class<? extends Instruction<?, ?>>[] dependencies,
 			boolean supportAsync);
+	
 }

@@ -1,0 +1,206 @@
+package ca.uwaterloo.asw4j;
+
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import ca.uwaterloo.asw4j.internal.InstructionClassDependencyNode;
+import ca.uwaterloo.asw4j.internal.InstructionClassNode;
+import ca.uwaterloo.asw4j.internal.InstructionClassUtility;
+
+public abstract class AbstractDependencyInstructionResolver extends
+		AbstractInstructionResolver implements DependencyInstructionResolver {
+
+	protected boolean requireResolve;
+	
+	public AbstractDependencyInstructionResolver(DataStore dataStore,
+			ToolResolver toolResolver, boolean enablePooling) {
+		super(dataStore, toolResolver, enablePooling);
+	}
+
+	/**
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * The depending {@link Instruction} classes of the registered
+	 * {@link Instruction} are recursively registered.
+	 * </p>
+	 */
+	public void registerInstructionClass(
+			Class<? extends Instruction<?, ?>> instructionClass) {
+
+		registerInstructionClass(instructionClass,
+				InstructionClassUtility
+						.getInstructionRequireDataNames(instructionClass),
+				InstructionClassUtility
+						.getInstructionRequireDataTypes(instructionClass),
+				InstructionClassUtility
+						.getInstructionProduceDataName(instructionClass),
+				InstructionClassUtility
+						.getInstructionSingletonSupport(instructionClass),
+				InstructionClassUtility
+						.getInstructionDependencies(instructionClass),
+				InstructionClassUtility
+						.getInstructionAsyncSupport(instructionClass));
+	}
+	
+	/**
+	 * Force the {@link DAGInstructionResolver} to resolve the dependencies
+	 * between registered {@link Instruction}s.
+	 */
+	public void requireResolveDependencies() {
+		requireResolve = true;
+	}
+
+	/**
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * The depending {@link Instruction} classes of the registered
+	 * {@link Instruction} are recursively registered.
+	 * </p>
+	 */
+	public void registerInstructionClass(
+			Class<? extends Instruction<?, ?>> instructionClass,
+			String produceDataName) {
+
+		registerInstructionClass(instructionClass,
+				InstructionClassUtility
+						.getInstructionRequireDataNames(instructionClass),
+				InstructionClassUtility
+						.getInstructionRequireDataTypes(instructionClass),
+				produceDataName,
+				InstructionClassUtility
+						.getInstructionSingletonSupport(instructionClass),
+				InstructionClassUtility
+						.getInstructionDependencies(instructionClass),
+				InstructionClassUtility
+						.getInstructionAsyncSupport(instructionClass));
+	}
+
+	/**
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * The depending {@link Instruction} classes of the registered
+	 * {@link Instruction} are recursively registered.
+	 * </p>
+	 */
+	public void registerInstructionClass(
+			Class<? extends Instruction<?, ?>> instructionClass,
+			String[] requireDataNames, Type[] requireDataTypes) {
+
+		registerInstructionClass(instructionClass, requireDataNames,
+				requireDataTypes,
+				InstructionClassUtility
+						.getInstructionProduceDataName(instructionClass),
+				InstructionClassUtility
+						.getInstructionSingletonSupport(instructionClass),
+				InstructionClassUtility
+						.getInstructionDependencies(instructionClass),
+				InstructionClassUtility
+						.getInstructionAsyncSupport(instructionClass));
+	}
+
+	/**
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * The depending {@link Instruction} classes of the registered
+	 * {@link Instruction} are recursively registered.
+	 * </p>
+	 */
+	public void registerInstructionClass(
+			Class<? extends Instruction<?, ?>> instructionClass,
+			String[] requireDataNames, Type[] requireDataTypes,
+			String produceDataName) {
+
+		registerInstructionClass(instructionClass, requireDataNames,
+				requireDataTypes, produceDataName,
+				InstructionClassUtility
+						.getInstructionSingletonSupport(instructionClass),
+				InstructionClassUtility
+						.getInstructionDependencies(instructionClass),
+				InstructionClassUtility
+						.getInstructionAsyncSupport(instructionClass));
+	}
+
+	/**
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * The depending {@link Instruction} classes of the registered
+	 * {@link Instruction} are recursively registered.
+	 * </p>
+	 */
+	public void registerInstructionClass(
+			Class<? extends Instruction<?, ?>> instructionClass,
+			String[] requireDataNames, Type[] requireDataTypes,
+			String produceDataName, boolean supportSingleton) {
+
+		registerInstructionClass(instructionClass, requireDataNames,
+				requireDataTypes, produceDataName, supportSingleton,
+				InstructionClassUtility
+						.getInstructionDependencies(instructionClass),
+				InstructionClassUtility
+						.getInstructionAsyncSupport(instructionClass));
+	}
+
+	public void registerInstructionClass(
+			Class<? extends Instruction<?, ?>> instructionClass,
+			Class<? extends Instruction<?, ?>>[] dependencies) {
+
+		registerInstructionClass(instructionClass,
+				InstructionClassUtility
+						.getInstructionRequireDataNames(instructionClass),
+				InstructionClassUtility
+						.getInstructionRequireDataTypes(instructionClass),
+				InstructionClassUtility
+						.getInstructionProduceDataName(instructionClass),
+				InstructionClassUtility
+						.getInstructionSingletonSupport(instructionClass),
+				dependencies,
+				InstructionClassUtility
+						.getInstructionAsyncSupport(instructionClass));
+	}
+
+	public void registerInstructionClass(
+			Class<? extends Instruction<?, ?>> instructionClass,
+			String[] requireDataNames, Type[] requireDataTypes,
+			String produceDataName, boolean supportSingleton,
+			Class<? extends Instruction<?, ?>>[] dependencies) {
+
+		registerInstructionClass(instructionClass, requireDataNames,
+				requireDataTypes, produceDataName, supportSingleton,
+				dependencies,
+				InstructionClassUtility
+						.getInstructionAsyncSupport(instructionClass));
+	}
+	
+	protected void resolveDependencies() {
+
+		for (InstructionClassNode node : instructionClassMap.values()) {
+			InstructionClassDependencyNode dependencyNode = (InstructionClassDependencyNode) node;
+			if (dependencyNode.getDependencies() == null) {
+				continue;
+			}
+
+			for (Class<?> clz : dependencyNode.getDependencies()) {
+				InstructionClassDependencyNode dependent = (InstructionClassDependencyNode) instructionClassMap
+						.get(clz);
+
+				if (dependent != null) {
+					dependencyNode.addOutgoing(dependent);
+					dependent.addIncoming(dependencyNode);
+				}
+			}
+		}
+	}
+
+}

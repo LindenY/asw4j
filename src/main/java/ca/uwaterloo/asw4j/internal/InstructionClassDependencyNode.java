@@ -111,33 +111,6 @@ public class InstructionClassDependencyNode extends InstructionClassNode {
 		super.clear();
 	}
 
-	public static void resolveDependencies(
-			List<? extends InstructionClassDependencyNode> dependencyNodes) {
-
-		Map<Class<?>, InstructionClassDependencyNode> instructionsMap = new HashMap<Class<?>, InstructionClassDependencyNode>();
-
-		for (InstructionClassDependencyNode node : dependencyNodes) {
-			node.clear();
-			instructionsMap.put(node.getInstructionClass(), node);
-		}
-
-		for (InstructionClassDependencyNode node : dependencyNodes) {
-			if (node.getDependencies() == null) {
-				continue;
-			}
-
-			for (Class<?> clz : node.getDependencies()) {
-				InstructionClassDependencyNode dependent = instructionsMap
-						.get(clz);
-
-				if (dependent != null) {
-					node.addOutgoing(dependent);
-					dependent.addIncoming(node);
-				}
-			}
-		}
-	}
-
 	public static class InstructionClassDependencyState extends
 			InstructionClassState {
 

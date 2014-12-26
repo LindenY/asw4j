@@ -17,7 +17,7 @@ import ca.uwaterloo.asw4j.internal.InstructionClassNode;
  * @since 1.0.0
  */
 public abstract class AbstractInstructionResolver implements
-		InstructionResolver, InstructionClassRegister {
+		InstructionResolver {
 
 	protected final boolean enablePooling;
 
@@ -67,7 +67,6 @@ public abstract class AbstractInstructionResolver implements
 	public int numberOfRegisteredInstruction() {
 		return instructionClassMap.size();
 	}
-	
 	
 
 	// TODO : Add comments
