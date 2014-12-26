@@ -43,6 +43,11 @@ public class ConcurrentMapDataStore implements DataStore {
 	}
 
 	public void add(Object obj, String name) {
+		
+		if (obj == null) {
+			return;
+		}
+		
 		TypeToken<?> typeToken = TypeToken.get(obj.getClass(), name);
 		List<Object> objs = concurrentMap.get(typeToken);
 

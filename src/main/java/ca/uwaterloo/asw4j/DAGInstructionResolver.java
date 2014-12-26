@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.uwaterloo.asw4j.internal.InstructionClassDependencyNode;
+import ca.uwaterloo.asw4j.internal.InstructionClassNode;
 import ca.uwaterloo.asw4j.internal.InstructionClassUtility;
 import ca.uwaterloo.asw4j.internal.InstructionClassState;
 import ca.uwaterloo.asw4j.meta.DependOn;
@@ -31,8 +32,8 @@ public class DAGInstructionResolver extends AbstractDependencyInstructionResolve
 
 	private final static Logger LOG = LoggerFactory
 			.getLogger(DAGInstructionResolver.class);
-
-	private List<MarkableDependencyNode> instructionClassNodes;
+	
+	private List<MarkableDependencyNode> orderedInstructionClassNodes;
 
 	public DAGInstructionResolver(DataStore dataStore) {
 		this(dataStore, null, false);
@@ -45,8 +46,6 @@ public class DAGInstructionResolver extends AbstractDependencyInstructionResolve
 	public DAGInstructionResolver(DataStore dataStore,
 			ToolResolver toolResolver, boolean enablePooling) {
 		super(dataStore, toolResolver, enablePooling);
-
-		instructionClassNodes = new ArrayList<DAGInstructionResolver.MarkableDependencyNode>();
 	}
 
 	/**
@@ -97,7 +96,6 @@ public class DAGInstructionResolver extends AbstractDependencyInstructionResolve
 			}
 		}
 
-		instructionClassNodes.add(mdn);
 		putIntructionClassNode(mdn);
 		requireResolveDependencies();
 	}
@@ -107,15 +105,14 @@ public class DAGInstructionResolver extends AbstractDependencyInstructionResolve
 			InstantiationException, IllegalAccessException,
 			InvocationTargetException {
 		if (requireResolve) {
-			InstructionClassDependencyNode
-					.resolveDependencies(instructionClassNodes);
+			resolveDependencies();
 			resolveDependentsOrder();
 			requireResolve = false;
 		}
 
 		Instruction<?, ?> instruction = null;
 
-		Iterator<MarkableDependencyNode> iterator = instructionClassNodes
+		Iterator<MarkableDependencyNode> iterator = orderedInstructionClassNodes
 				.iterator();
 		while (iterator.hasNext()) {
 			MarkableDependencyNode nextDN = iterator.next();
@@ -148,7 +145,7 @@ public class DAGInstructionResolver extends AbstractDependencyInstructionResolve
 		}
 
 		if (LOG.isTraceEnabled()) {
-			for (MarkableDependencyNode d : instructionClassNodes) {
+			for (MarkableDependencyNode d : orderedInstructionClassNodes) {
 				LOG.trace(d.getInstructionClass().getName() + " State="
 						+ d.getState());
 			}
@@ -159,19 +156,15 @@ public class DAGInstructionResolver extends AbstractDependencyInstructionResolve
 
 		return instruction;
 	}
-
+	
 	private void resolveDependentsOrder() {
-		List<MarkableDependencyNode> dependentsOrder = new ArrayList<DAGInstructionResolver.MarkableDependencyNode>();
+		orderedInstructionClassNodes = new ArrayList<DAGInstructionResolver.MarkableDependencyNode>();
 
-		Iterator<MarkableDependencyNode> iterator = instructionClassNodes
-				.iterator();
+		Iterator<InstructionClassNode>iterator = instructionClassMap.values().iterator();
 		while (iterator.hasNext()) {
-			MarkableDependencyNode nextNode = iterator.next();
-			visitDependencyNode(nextNode, dependentsOrder);
+			MarkableDependencyNode nextNode = (MarkableDependencyNode) iterator.next();
+			visitDependencyNode(nextNode, orderedInstructionClassNodes);
 		}
-
-		instructionClassNodes = dependentsOrder;
-
 	}
 
 	private void visitDependencyNode(MarkableDependencyNode dependencyNode,

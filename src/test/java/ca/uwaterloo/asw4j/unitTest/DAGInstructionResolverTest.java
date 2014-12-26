@@ -17,7 +17,6 @@ import ca.uwaterloo.asw4j.meta.Singleton;
 
 public class DAGInstructionResolverTest {
 
-	@Ignore
 	@Test
 	public void testRegisterInstructionClass() {
 
@@ -32,7 +31,6 @@ public class DAGInstructionResolverTest {
 		assertTrue(instructionResolver.numberOfRegisteredInstruction() == 6);
 	}
 
-	@Ignore
 	@Test(expected = IllegalArgumentException.class)
 	public void testMultipleRegisterInstructionClass() {
 
@@ -47,8 +45,7 @@ public class DAGInstructionResolverTest {
 		instructionResolver
 				.registerInstructionClass(TestInstructionWithTreeDependency.TreeLeafInstructionA.class);
 	}
-	
-	@Ignore
+
 	@Test
 	public void testMultipleInstructionWithSingleton() throws SecurityException, IllegalArgumentException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
 		
@@ -74,7 +71,6 @@ public class DAGInstructionResolverTest {
 		assertTrue(leafInstruction1 == null);
 	}
 	
-	@Ignore
 	@Test
 	public void testDependingInstructions() throws SecurityException, IllegalArgumentException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
 		
