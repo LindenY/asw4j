@@ -93,7 +93,14 @@ public abstract class AbstractInstructionResolver implements
 	 * @param instructionNode
 	 */
 	protected void putIntructionClassNode(InstructionClassNode instructionNode) {
-		instructionClassMap.put(instructionNode.getInstructionClass(),
-				instructionNode);
+
+		InstructionClassNode node = instructionClassMap.put(
+				instructionNode.getInstructionClass(), instructionNode);
+
+		if (node != null) {
+			throw new IllegalArgumentException(instructionNode
+					.getInstructionClass().getName()
+					+ " is already registered.");
+		}
 	}
 }
