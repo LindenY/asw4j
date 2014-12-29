@@ -11,8 +11,6 @@ import ca.uwaterloo.asw4j.internal.InstructionClassUtility;
 
 public abstract class AbstractDependencyInstructionResolver extends
 		AbstractInstructionResolver implements DependencyInstructionResolver {
-
-	protected boolean requireResolve;
 	
 	public AbstractDependencyInstructionResolver(DataStore dataStore,
 			ToolResolver toolResolver, boolean enablePooling) {
@@ -20,7 +18,7 @@ public abstract class AbstractDependencyInstructionResolver extends
 	}
 
 	/**
-	 * <p>
+//	 * <p>
 	 * {@inheritDoc}
 	 * </p>
 	 * <p>
@@ -44,14 +42,6 @@ public abstract class AbstractDependencyInstructionResolver extends
 						.getInstructionDependencies(instructionClass),
 				InstructionClassUtility
 						.getInstructionAsyncSupport(instructionClass));
-	}
-	
-	/**
-	 * Force the {@link DAGInstructionResolver} to resolve the dependencies
-	 * between registered {@link Instruction}s.
-	 */
-	public void requireResolveDependencies() {
-		requireResolve = true;
 	}
 
 	/**
@@ -183,10 +173,19 @@ public abstract class AbstractDependencyInstructionResolver extends
 						.getInstructionAsyncSupport(instructionClass));
 	}
 	
+	@Override
+	protected void prepare() {
+		if (prepared) {
+			return;
+		}
+		prepared = true; 
+		resolveDependencies();
+	}
+	
 	protected void resolveDependencies() {
-
 		for (InstructionClassNode node : instructionClassMap.values()) {
 			InstructionClassDependencyNode dependencyNode = (InstructionClassDependencyNode) node;
+			node.clear();
 			if (dependencyNode.getDependencies() == null) {
 				continue;
 			}

@@ -97,18 +97,15 @@ public class DAGInstructionResolver extends AbstractDependencyInstructionResolve
 		}
 
 		putIntructionClassNode(mdn);
-		requireResolveDependencies();
+		prepared = false;
 	}
 
 	public Instruction<?, ?> resolveInstruction() throws SecurityException,
 			IllegalArgumentException, NoSuchMethodException,
 			InstantiationException, IllegalAccessException,
 			InvocationTargetException {
-		if (requireResolve) {
-			resolveDependencies();
-			resolveDependentsOrder();
-			requireResolve = false;
-		}
+		
+		prepare();
 
 		Instruction<?, ?> instruction = null;
 
@@ -155,6 +152,16 @@ public class DAGInstructionResolver extends AbstractDependencyInstructionResolve
 		}
 
 		return instruction;
+	}
+	
+	@Override
+	protected void prepare() {
+		if (prepared) {
+			return;
+		}
+		
+		super.prepare();
+		resolveDependentsOrder();
 	}
 	
 	private void resolveDependentsOrder() {

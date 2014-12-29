@@ -25,6 +25,8 @@ public abstract class AbstractInstructionResolver implements
 
 	protected ToolResolver toolResolver;
 	protected DataStore dataStore;
+	
+	protected boolean prepared;
 
 	public AbstractInstructionResolver(DataStore dataStore,
 			ToolResolver toolResolver, boolean enablePooling) {
@@ -76,6 +78,13 @@ public abstract class AbstractInstructionResolver implements
 	 */
 	public boolean isPoolingEnabled() {
 		return enablePooling;
+	}
+	
+	/**
+	 * 
+	 */
+	protected void prepare() {
+		
 	}
 	
 	/**
