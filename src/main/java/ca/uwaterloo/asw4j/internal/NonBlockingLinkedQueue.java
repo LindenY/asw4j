@@ -1,6 +1,5 @@
 package ca.uwaterloo.asw4j.internal;
 
-import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,14 +25,8 @@ public class NonBlockingLinkedQueue<E>{
 		return (size.get() <= 0);
 	}
 
-	public boolean retainAll(Collection<?> c) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+		return size.get();
 	}
 
 	public void push(E e) {
@@ -65,9 +58,21 @@ public class NonBlockingLinkedQueue<E>{
 		size.decrementAndGet();
 		if (head.get() == tail.get()) {
 			head.set(null);
-			return (E) tail.getAndSet(null).next;
+			return (E) tail.getAndSet(null).value;
 		}
-		return (E) head.getAndSet(head.get().next);
+		return (E) head.getAndSet(head.get().next).value;
+	}
+	
+	public Object[] toArray() {
+		Node pointer = head.get();
+		Object[] objs = new Object[size()];
+		
+		for (int i=0; i<size(); i++) {
+			objs[i] = pointer.value;
+			pointer = pointer.next;
+		}
+		
+		return objs;
 	}
 	
 	private static class Node {
