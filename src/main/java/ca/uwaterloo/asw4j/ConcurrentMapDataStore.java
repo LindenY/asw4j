@@ -2,14 +2,15 @@ package ca.uwaterloo.asw4j;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.uwaterloo.asw4j.internal.DataManipulationObjectMap;
+import ca.uwaterloo.asw4j.internal.NonBlockingLinkedQueue;
 import ca.uwaterloo.asw4j.reflection.TypeToken;
 
 /**
@@ -27,15 +28,15 @@ import ca.uwaterloo.asw4j.reflection.TypeToken;
  */
 public class ConcurrentMapDataStore implements DataStore {
 
-	private ConcurrentHashMap<TypeToken<?>, List<Object>> concurrentMap;
+	private ConcurrentHashMap<TypeToken<?>, NonBlockingLinkedQueue<Object>> concurrentMap;
 	private DataManipulationObjectMap manipulationObjectMap;
 
-	private volatile int size;
+	private AtomicInteger size;
 
 	public ConcurrentMapDataStore() {
-		concurrentMap = new ConcurrentHashMap<TypeToken<?>, List<Object>>();
+		concurrentMap = new ConcurrentHashMap<TypeToken<?>, NonBlockingLinkedQueue<Object>>();
 		manipulationObjectMap = new DataManipulationObjectMap();
-		size = 0;
+		size = new AtomicInteger(0);
 	}
 
 	public void add(Object obj) {
@@ -49,17 +50,15 @@ public class ConcurrentMapDataStore implements DataStore {
 		}
 		
 		TypeToken<?> typeToken = TypeToken.get(obj.getClass(), name);
-		List<Object> objs = concurrentMap.get(typeToken);
+		NonBlockingLinkedQueue<Object> objs = concurrentMap.get(typeToken);
 
 		if (objs == null) {
-			objs = new ArrayList<Object>();
+			objs = new NonBlockingLinkedQueue<Object>();
 			concurrentMap.put(typeToken, objs);
 		}
 
-		synchronized (objs) {
-			objs.add(obj);
-			size++;
-		}
+		objs.add(obj);
+		size.incrementAndGet();
 
 		combine(typeToken);
 		balance(typeToken);
@@ -85,7 +84,7 @@ public class ConcurrentMapDataStore implements DataStore {
 
 	public boolean contain(TypeToken<?> typeToken) {
 
-		List<Object> objs = concurrentMap.get(typeToken);
+		NonBlockingLinkedQueue<Object> objs = concurrentMap.get(typeToken);
 
 		if (objs == null) {
 			return false;
@@ -140,17 +139,15 @@ public class ConcurrentMapDataStore implements DataStore {
 
 	@SuppressWarnings("unchecked")
 	public <T> T getAndRemove(TypeToken<T> typeToken) {
-		List<Object> objs = concurrentMap.get(typeToken);
+		NonBlockingLinkedQueue<Object> objs = concurrentMap.get(typeToken);
 
 		if (objs == null || objs.size() <= 0) {
 			return null;
 		}
 
-		Object obj = null;
-		synchronized (objs) {
-			obj = objs.get(0);
-			objs.remove(0);
-			size--;
+		Object obj = objs.poll();
+		if (obj != null) {
+			size.decrementAndGet();
 		}
 
 		return (T) obj;
@@ -189,38 +186,8 @@ public class ConcurrentMapDataStore implements DataStore {
 		return objs.get(0);
 	}
 
-	/**
-	 * <p>
-	 * {@inheritDoc}
-	 * </p>
-	 * <p>
-	 * NOTE: This method is not encouraged to be used, because right now it uses
-	 * normal {@link ArrayList} to store the objects and {@link ArrayList} does
-	 * not support concurrent operation. To prevent
-	 * {@link ConcurrentModificationException} from happening,it uses
-	 * 'synchronized' block to lock the entire {@link ArrayList} from accessing.
-	 * By using this method, it surely prevent the happening of the
-	 * {@link ConcurrentModificationException}, but with the cost of
-	 * performance.
-	 * </p>
-	 */
-	@Deprecated
-	public boolean containObject(Object obj) {
-
-		TypeToken<?> typeToken = TypeToken.get(obj.getClass());
-
-		if (!contain(typeToken)) {
-			return false;
-		}
-
-		List<Object> objs = concurrentMap.get(typeToken);
-		synchronized (objs) {
-			return objs.contains(obj);
-		}
-	}
-
 	public int size() {
-		return size;
+		return size.get();
 	}
 
 	public void registerBalancer(TypeToken<?> typeToken, Balancer<?> balancer) {
@@ -249,7 +216,7 @@ public class ConcurrentMapDataStore implements DataStore {
 	 * @return The {@link ArrayList} of {@link Object}s stored in this
 	 *         {@link ConcurrentMapDataStore}.
 	 */
-	public Collection<List<Object>> values() {
+	public Collection<NonBlockingLinkedQueue<Object>> values() {
 		return concurrentMap.values();
 	}
 	
@@ -260,10 +227,10 @@ public class ConcurrentMapDataStore implements DataStore {
 	 * @return The {@link Map} of {@link TypeToken}s and {@link ArrayList} of
 	 *         {@link Object}s.
 	 */
-	public Map<TypeToken<?>, List<Object>> getDataMap() {
-		Map<TypeToken<?>, List<Object>> resultMap = new HashMap<TypeToken<?>, List<Object>>();
+	public Map<TypeToken<?>, NonBlockingLinkedQueue<Object>> getDataMap() {
+		Map<TypeToken<?>, NonBlockingLinkedQueue<Object>> resultMap = new HashMap<TypeToken<?>, NonBlockingLinkedQueue<Object>>();
 		for (TypeToken<?> tk : concurrentMap.keySet()) {
-			List<Object> objs = concurrentMap.get(tk);
+			NonBlockingLinkedQueue<Object> objs = concurrentMap.get(tk);
 			if (objs.size() > 0) {
 				resultMap.put(tk, objs);
 			}
@@ -288,7 +255,7 @@ public class ConcurrentMapDataStore implements DataStore {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private boolean combine(TypeToken<?> typeToken) {
-		List<Object> objs = concurrentMap.get(typeToken);
+		NonBlockingLinkedQueue<Object> objs = concurrentMap.get(typeToken);
 
 		if (objs == null || objs.size() <= 0) {
 			return false;
@@ -299,12 +266,13 @@ public class ConcurrentMapDataStore implements DataStore {
 			return false;
 		}
 
+		Object obj = null;
 		synchronized (objs) {
-			Object obj = combiner.combine((Collection) objs);
-			size = size - objs.size() + 1;
-			objs.clear();
-			objs.add(obj);
+			obj = combiner.combine((Collection) objs);
 		}
+		size.getAndAdd(1-objs.size());
+		objs.clear();
+		objs.add(obj);
 
 		return true;
 	}
@@ -326,7 +294,7 @@ public class ConcurrentMapDataStore implements DataStore {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private boolean balance(TypeToken<?> typeToken) {
-		List<Object> objs = concurrentMap.get(typeToken);
+		NonBlockingLinkedQueue<Object> objs = concurrentMap.get(typeToken);
 
 		if (objs == null || objs.size() <= 0) {
 			return false;
@@ -337,12 +305,13 @@ public class ConcurrentMapDataStore implements DataStore {
 			return false;
 		}
 
+		Collection balanced = null;
 		synchronized (objs) {
-			Collection balanced = balancer.balance((Collection) objs);
-			size = size - objs.size() + balanced.size();
-			objs.clear();
-			objs.addAll(balanced);
+			balanced = balancer.balance((Collection) objs);
 		}
+		size.getAndAdd(balanced.size()-objs.size());
+		objs.clear();
+		objs.addAll(balanced);
 
 		return true;
 	}

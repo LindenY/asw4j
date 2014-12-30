@@ -243,16 +243,6 @@ public interface DataStore {
 	public <T> T combineAndGet(TypeToken<T> typeToken);
 
 	/**
-	 * Check if the specified {@link Object} existed in the {@link DataStore}.
-	 * 
-	 * @param obj
-	 *            The {@link Object} to be checked against.
-	 * @return Return {@code true}, if such {@link Object} is found; Otherwise,
-	 *         return {@code false}.
-	 */
-	public boolean containObject(Object obj);
-
-	/**
 	 * Number of {@link Object}s in the {@link DataStore}.
 	 * 
 	 * @return The number of {@link Object}s in the {@link DataStore}.

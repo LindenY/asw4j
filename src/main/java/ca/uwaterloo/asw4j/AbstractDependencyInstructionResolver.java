@@ -1,9 +1,6 @@
 package ca.uwaterloo.asw4j;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import ca.uwaterloo.asw4j.internal.InstructionClassDependencyNode;
 import ca.uwaterloo.asw4j.internal.InstructionClassNode;
