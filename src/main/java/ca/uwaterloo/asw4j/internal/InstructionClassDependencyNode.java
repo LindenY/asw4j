@@ -87,7 +87,7 @@ public class InstructionClassDependencyNode extends InstructionClassNode {
 		if (!node.supportAsync) {
 			boolean isReady = true;
 			for (InstructionClassDependencyNode n : node.outgoings) {
-				if (n.state != InstructionClassState.Terminated()) {
+				if (n.getState() != InstructionClassState.Terminated()) {
 					isReady = false;
 					break;
 				}

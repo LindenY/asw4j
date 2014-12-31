@@ -6,6 +6,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import ca.uwaterloo.asw4j.Instruction;
 import ca.uwaterloo.asw4j.ToolResolver;
@@ -28,10 +29,10 @@ public class InstructionClassNode {
 	protected final TypeToken<?> produceData;
 	protected final boolean supportSingleton;
 
-	protected InstructionClassState state;
+	protected AtomicReference<InstructionClassState> state;
 	protected AtomicInteger numOfInstructionIssued;
 
-	protected List<Instruction<?, ?>> pool;
+	protected NonBlockingLinkedQueue<Instruction<?, ?>> pool;
 
 	/**
 	 * <p>
@@ -78,7 +79,7 @@ public class InstructionClassNode {
 		this.numOfInstructionIssued = new AtomicInteger(0);
 
 		if (enablePooling) {
-			this.pool = new ArrayList<Instruction<?, ?>>();
+			this.pool = new NonBlockingLinkedQueue<Instruction<?, ?>>();
 		}
 
 		setState(InstructionClassState.Ready());
@@ -116,9 +117,7 @@ public class InstructionClassNode {
 
 		Instruction<?, ?> instruction = null;
 		if (pool != null && pool.size() > 0) {
-			synchronized (pool) {
-				instruction = pool.remove(0);
-			}
+			instruction = pool.poll();
 		} else {
 			Constructor<? extends Instruction<?, ?>> constructor = null;
 
@@ -161,13 +160,11 @@ public class InstructionClassNode {
 	}
 
 	public InstructionClassState getState() {
-		return state;
+		return state.get();
 	}
 
 	public void setState(InstructionClassState state) {
-		synchronized ("state") {
-			this.state = state;
-		}
+		this.state.set(state);
 	}
 
 	/**
@@ -211,9 +208,7 @@ public class InstructionClassNode {
 		}
 
 		if (pool != null) {
-			synchronized (pool) {
-				pool.add(instruction);
-			}
+			pool.add(instruction);
 		}
 	}
 
@@ -224,9 +219,7 @@ public class InstructionClassNode {
 	 * </p>
 	 */
 	public void clear() {
-		if (pool != null) {
-			pool = new ArrayList<Instruction<?, ?>>();
-		}
+		pool.clear();
 		setState(InstructionClassState.Ready());
 	}
 	

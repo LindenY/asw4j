@@ -1,5 +1,6 @@
 package ca.uwaterloo.asw4j;
 
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import ca.uwaterloo.asw4j.internal.InstructionClassNode;
@@ -41,10 +42,13 @@ public abstract class AbstractInstructionResolver implements
 			Throwable throwed) {
 		
 		InstructionClassNode node = getInstructionClassNode(instruction);
-		if (node != null) {
-			dataStore.add(instruction.getResult(), node.getProduceData().getName());
-			node.returnInstanceOfInstruction(instruction);
+		if (node == null) {
+			throw new NoSuchElementException("No such Instruction Class: "
+					+ instruction.getClass().getName() + " is registered.");
 		}
+		
+		dataStore.add(instruction.getResult(), node.getProduceData().getName());
+		node.returnInstanceOfInstruction(instruction);
 	}
 
 	public void beforeInstructionExecution(Instruction<?, ?> instruction) {
