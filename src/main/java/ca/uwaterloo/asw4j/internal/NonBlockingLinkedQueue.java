@@ -70,6 +70,10 @@ public class NonBlockingLinkedQueue<E> implements Queue<E> {
 				return this;
 			}
 
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+
 		}.init(head.get());
 	}
 
