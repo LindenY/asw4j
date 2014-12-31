@@ -20,7 +20,7 @@ asw4j is deployed in <a href="http://search.maven.org/">Maven Central Repo</a>. 
 <dependency>
   <groupId>ca.uwaterloo</groupId>
   <artifactId>asw4j</artifactId>
-  <version>1.0.1-RELEASE</version>
+  <version>1.1.0-RELEASE</version>
 </dependency>
 ```
 
