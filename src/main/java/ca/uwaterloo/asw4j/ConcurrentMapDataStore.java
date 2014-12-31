@@ -176,7 +176,7 @@ public class ConcurrentMapDataStore implements DataStore {
 
 	@SuppressWarnings("unchecked")
 	public <T> T combineAndGet(TypeToken<T> typeToken) {
-		List<T> objs = (List<T>) concurrentMap.get(typeToken);
+		NonBlockingLinkedQueue<T> objs = (NonBlockingLinkedQueue<T>) concurrentMap.get(typeToken);
 
 		if (objs == null || objs.size() <= 0) {
 			return null;
@@ -184,7 +184,7 @@ public class ConcurrentMapDataStore implements DataStore {
 
 		combine(typeToken);
 
-		return objs.get(0);
+		return objs.poll();
 	}
 
 	public int size() {

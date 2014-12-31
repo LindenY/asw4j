@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.uwaterloo.asw4j.unitTest.TestInstructionWithTreeDependency.TreeRootInstruction;
