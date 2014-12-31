@@ -70,7 +70,7 @@
 	
 	<profiles>
 	 	<!-- Release profile : Active when release -->
-		<profile>
+<!-- 		<profile>
 			<id>release</id>
 			<build>
 				<plugins>
@@ -130,7 +130,7 @@
 					</plugin>
 				</plugins>
 			</build>
-		</profile>
+		</profile> -->
 	</profiles>
 	
 </project>
