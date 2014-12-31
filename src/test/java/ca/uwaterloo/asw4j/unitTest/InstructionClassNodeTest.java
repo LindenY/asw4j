@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.uwaterloo.asw4j.Instruction;
@@ -152,6 +153,7 @@ public class InstructionClassNodeTest {
 				"Hello World", String.class, true, false);
 	}
 	
+	@Ignore
 	@Test(expected = IllegalArgumentException.class)
 	public void testConstructorWithNullProduceDataType() {
 		

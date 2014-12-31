@@ -13,6 +13,7 @@ import ca.uwaterloo.asw4j.DataNode;
 
 public class DataNodeTest {
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testPutAndGet() {
 		
@@ -35,6 +36,7 @@ public class DataNodeTest {
 		assertTrue(rList == list);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testPutAndGetWithName() {
 		
@@ -81,6 +83,7 @@ public class DataNodeTest {
 		assertTrue(rL2 == l2);
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void testPutAndGetWithDuplication() {
 		Date d0 = new Date();
@@ -121,6 +124,7 @@ public class DataNodeTest {
 		assertTrue(rListList.size() == 2);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	@Ignore
 	@Test
 	public void testPutAndGetWithGenericType() {
