@@ -82,7 +82,7 @@ public class InstructionClassNode {
 			this.pool = new NonBlockingLinkedQueue<Instruction<?, ?>>();
 		}
 
-		setState(InstructionClassState.Ready());
+		state = new AtomicReference<InstructionClassState>(InstructionClassState.Ready());
 	}
 
 	/**
@@ -219,7 +219,9 @@ public class InstructionClassNode {
 	 * </p>
 	 */
 	public void clear() {
-		pool.clear();
+		if (pool != null) {
+			pool.clear();
+		}
 		setState(InstructionClassState.Ready());
 	}
 	
