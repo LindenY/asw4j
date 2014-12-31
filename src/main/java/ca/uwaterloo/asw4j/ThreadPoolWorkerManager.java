@@ -82,6 +82,11 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 		return new FutureTask<T>(this, TypeToken.get(type, name)) {
 		};
 	}
+	
+	public <T> Future<T> asyncStart(Class<T> type, String name, Combiner<?> combiner) {
+		instructionResolver.getDataStore().registerCombiner(type, name, combiner);
+		return asyncStart(type, name);
+	}
 
 	public <T> T start(Class<T> type, String name) {
 		T result = null;
@@ -94,6 +99,11 @@ public class ThreadPoolWorkerManager extends AbstractWorkerManager {
 			}
 		}
 		return result;
+	}
+	
+	public <T> T start(Class<T> type, String name, Combiner<?> combiner) {
+		instructionResolver.getDataStore().registerCombiner(type, name, combiner);
+		return start(type, name);
 	}
 
 	private void startExecution() {

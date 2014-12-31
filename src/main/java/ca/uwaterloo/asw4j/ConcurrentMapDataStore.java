@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import ca.uwaterloo.asw4j.internal.DataManipulationObjectMap;
 import ca.uwaterloo.asw4j.internal.NonBlockingLinkedQueue;
 import ca.uwaterloo.asw4j.reflection.TypeToken;
+import static ca.uwaterloo.asw4j.internal.Assert.*;
 
 /**
  * <p>
@@ -190,11 +191,28 @@ public class ConcurrentMapDataStore implements DataStore {
 		return size.get();
 	}
 
+	public void registerBalancer(Class<?> type, Balancer<?> balancer) {
+		registerBalancer(type, null, balancer);
+	}
+	
+	public void registerBalancer(Class<?> type, String name, Balancer<?> balancer) {
+		registerBalancer(TypeToken.get(type, name), balancer);
+	}
+	
 	public void registerBalancer(TypeToken<?> typeToken, Balancer<?> balancer) {
 		manipulationObjectMap.registerBalancer(typeToken, balancer);
 	}
+	
+	public void registerCombiner(Class<?> type, Combiner<?> combiner) {
+		registerCombiner(type, null, combiner);
+	}
+	
+	public void registerCombiner(Class<?> type, String name, Combiner<?> combiner) {
+		registerCombiner(TypeToken.get(type, name), combiner);
+	}
 
 	public void registerCombiner(TypeToken<?> typeToken, Combiner<?> combiner) {
+		assertNull(typeToken, combiner);
 		manipulationObjectMap.registerCombiner(typeToken, combiner);
 	}
 	

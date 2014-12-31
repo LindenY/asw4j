@@ -250,7 +250,29 @@ public interface DataStore {
 	public int size();
 
 	/**
-	 * Register a {@link Balancer} for the given {@link TypeToken}
+	 * Register a {@link Balancer} for the given {@link Type}.
+	 * 
+	 * @param type
+	 *            The {@link Type} to be registered as.
+	 * @param balancer
+	 *            The {@link Balancer} to be registered.
+	 */
+	public void registerBalancer(Class<?> type, Balancer<?> balancer);
+	
+	/**
+	 * Register a {@link Balancer} for the given {@link Type} and name {@link String}.
+	 * 
+	 * @param type
+	 *            The {@link Type} to be registered as.
+	 * @param name
+	 * 			  The name {@link String} to be registered as.
+	 * @param balancer
+	 *            The {@link Balancer} to be registered.
+	 */
+	public void registerBalancer(Class<?> type, String name, Balancer<?> balancer);
+	
+	/**
+	 * Register a {@link Balancer} for the given {@link TypeToken}.
 	 * 
 	 * @param typeToken
 	 *            The {@link TypeToken} to be registered as.
@@ -260,7 +282,29 @@ public interface DataStore {
 	public void registerBalancer(TypeToken<?> typeToken, Balancer<?> balancer);
 
 	/**
-	 * Register a {@link Combiner} for the given {@link TypeToken}
+	 * Register a {@link Combiner} for the given {@link Type}.
+	 * 
+	 * @param type
+	 *            The {@link Type} to be registered as.
+	 * @param balancer
+	 *            The {@link Combiner} to be registered.
+	 */
+	public void registerCombiner(Class<?> type, Combiner<?> combiner);
+	
+	/**
+	 * Register a {@link Combiner} for the given {@link Type}.
+	 * 
+	 * @param type
+	 *            The {@link Type} to be registered as.
+	 * @param name
+	 * 		      The name {@link String} to be registered as.
+	 * @param balancer
+	 *            The {@link Combiner} to be registered.
+	 */
+	public void registerCombiner(Class<?> type, String name, Combiner<?> combiner);
+	
+	/**
+	 * Register a {@link Combiner} for the given {@link TypeToken}.
 	 * 
 	 * @param typeToken
 	 *            The {@link TypeToken} to be registered as.

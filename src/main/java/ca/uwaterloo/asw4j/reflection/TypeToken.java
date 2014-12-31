@@ -2,6 +2,8 @@ package ca.uwaterloo.asw4j.reflection;
 
 import java.lang.reflect.Type;
 
+import static ca.uwaterloo.asw4j.internal.Assert.*;
+
 /**
  * <p>
  * This class is served as an identity for data {@link Type}, which is used to
@@ -35,6 +37,9 @@ public class TypeToken<T> {
 
 	@SuppressWarnings("unchecked")
 	private TypeToken(Type type, String name) {
+		
+		assertNull(type);
+		
 		this.name = name;
 		this.type = TypeUtility.canonicalize(type);
 		this.rawType = (Class<? super T>) TypeUtility.getRawType(this.type);

@@ -7,6 +7,19 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * An implementation of {@link Queue} which is thread-safe.
+ * 
+ * <p>
+ * {@link NonBlockingLinkedQueue} uses lock free algorithm to avoid the usage of
+ * lock.
+ * </p>
+ * 
+ * @author Desmond Lin
+ * @since 1.0.1
+ * 
+ * @param <E>
+ */
 public class NonBlockingLinkedQueue<E> implements Queue<E> {
 
 	private AtomicReference<Node> head;
@@ -165,14 +178,14 @@ public class NonBlockingLinkedQueue<E> implements Queue<E> {
 
 	public boolean contains(Object o) {
 		assertNull(o);
-		
+
 		Iterator<E> iterator = iterator();
 		while (iterator.hasNext()) {
 			if (iterator.next().equals(o)) {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 

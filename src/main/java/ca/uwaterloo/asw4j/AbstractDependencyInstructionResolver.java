@@ -6,16 +6,30 @@ import ca.uwaterloo.asw4j.internal.InstructionClassDependencyNode;
 import ca.uwaterloo.asw4j.internal.InstructionClassNode;
 import ca.uwaterloo.asw4j.internal.InstructionClassUtility;
 
+/**
+ * A sub abstract class of {@link AbstractInstructionResolver}.
+ * 
+ * <p>
+ * {@link AbstractDependencyInstructionResolver} defined to extend more
+ * dependencies related functions and fields from
+ * {@link AbstractInstructionResolver} for dependencies related
+ * {@link InstructionResolver}.
+ * </p>
+ * 
+ * @author Desmond Lin
+ * @since 1.0.1
+ */
 public abstract class AbstractDependencyInstructionResolver extends
 		AbstractInstructionResolver implements DependencyInstructionResolver {
-	
+
 	public AbstractDependencyInstructionResolver(DataStore dataStore,
 			ToolResolver toolResolver, boolean enablePooling) {
 		super(dataStore, toolResolver, enablePooling);
 	}
 
 	/**
-//	 * <p>
+	 * // *
+	 * <p>
 	 * {@inheritDoc}
 	 * </p>
 	 * <p>
@@ -169,16 +183,16 @@ public abstract class AbstractDependencyInstructionResolver extends
 				InstructionClassUtility
 						.getInstructionAsyncSupport(instructionClass));
 	}
-	
+
 	@Override
 	protected void prepare() {
 		if (prepared) {
 			return;
 		}
-		prepared = true; 
+		prepared = true;
 		resolveDependencies();
 	}
-	
+
 	protected void resolveDependencies() {
 		for (InstructionClassNode node : instructionClassMap.values()) {
 			InstructionClassDependencyNode dependencyNode = (InstructionClassDependencyNode) node;

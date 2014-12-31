@@ -1,6 +1,5 @@
 package ca.uwaterloo.asw4j;
 
-import java.lang.reflect.Type;
 import java.util.concurrent.Future;
 
 /**
@@ -33,6 +32,19 @@ public interface WorkerManager {
 	 *         for completion.
 	 */
 	public <T> Future<T> asyncStart(Class<T> type, String name);
+	
+	/**
+	 * Register a {@link Combiner}, create and return a {@link Future} that can be used to cancel execution
+	 * and/or wait for completion.
+	 * 
+	 * @param type
+	 *            The data type of execution's result.
+	 * @param name
+	 *            The data name of execution's result.
+	 * @return A {@link Future} that can be used to cancel execution and/or wait
+	 *         for completion.
+	 */
+	public <T> Future<T> asyncStart(Class<T> type, String name, Combiner<?> combiner);
 
 	/**
 	 * Wait and return the result of execution.
@@ -46,49 +58,19 @@ public interface WorkerManager {
 	public <T> T start(Class<T> type, String name);
 
 	/**
-	 * @see InstructionResolver#numberOfRegisteredInstruction()
+	 * Register a {@link Combiner}, wait and return the result of execution.
+	 * 
+	 * @param type
+	 *            The data type of execution's result.
+	 * @param name
+	 *            The data name of execution's result.
+	 * @param combiner
+	 *            The combiner to be registered.
+	 *     
+	 * @return The result of execution.
 	 */
-	public int numberOfRegisteredInstruction();
-
-	/**
-	 * @see InstructionResolver#registerInstructionClass(Class)
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass);
-
-	/**
-	 * @see InstructionResolver#registerInstructionClass(Class, String)
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass,
-			String produceDataName);
-
-	/**
-	 * @see InstructionResolver#registerInstructionClass(Class, String[],
-	 *      Type[])
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass,
-			String[] requireDataNames, Type[] requireDataTypes);
-
-	/**
-	 * @see InstructionResolver#registerInstructionClass(Class, String[],
-	 *      Type[], String)
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass,
-			String[] requireDataNames, Type[] requireDataTypes,
-			String produceDataName);
-
-	/**
-	 * @see InstructionResolver#registerInstructionClass(Class, String[],
-	 *      Type[], String, boolean)
-	 */
-	public void registerInstructionClass(
-			Class<? extends Instruction<?, ?>> instructionClass,
-			String[] requireDataNames, Type[] requireDataTypes,
-			String produceDataName, boolean supportSingleton);
-
+	public <T> T start(Class<T> type, String name, Combiner<?> combiner);
+	
 	/**
 	 * <p>
 	 * The {@code enum} representation of the states of {@link WorkerManager}.
